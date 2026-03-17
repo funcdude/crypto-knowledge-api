@@ -5,7 +5,7 @@
 
 ## 🎯 Overview
 
-This project creates a revolutionary AI-powered API that monetizes expert crypto knowledge from Oskar Hurme's book "Cryptocurrencies Decrypted" using X402 micropayments. AI agents can access expert analysis for $0.001-0.02 USDC per query, paid instantly on Base L2.
+This project creates an AI-powered API that monetizes expert crypto knowledge from Oskar Hurme's book "Cryptocurrencies Decrypted" using X402 micropayments. AI agents can access expert analysis for $0.001-0.02 USDC per query, paid instantly on Base L2.
 
 ### Key Features
 
