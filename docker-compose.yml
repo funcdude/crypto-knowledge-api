@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/crypto_knowledge
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT:-us-west1-gcp-free}
+      - PAYMENT_ADDRESS=${PAYMENT_ADDRESS:-0x28e6b3e3e32308787f50e6d99e2b98745b381946}
+      - X402_FACILITATOR_URL=${X402_FACILITATOR_URL:-https://facilitator.coinbase.com}
+      - BANKR_API_KEY=${BANKR_API_KEY}
+      - DEBUG=true
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - crypto-knowledge
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=crypto_knowledge
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - crypto-knowledge
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - crypto-knowledge
+
+  # Next.js Frontend (optional for admin/demo UI)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_PAYMENT_ADDRESS=${PAYMENT_ADDRESS:-0x28e6b3e3e32308787f50e6d99e2b98745b381946}
+    depends_on:
+      - api
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - crypto-knowledge
+
+  # Content processing service (for book ingestion)
+  processor:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/crypto_knowledge
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT:-us-west1-gcp-free}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data  # Mount directory with book files
+    command: python -m app.scripts.process_book
+    profiles:
+      - processing  # Only run when explicitly requested
+    networks:
+      - crypto-knowledge
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  crypto-knowledge:
+    driver: bridge
