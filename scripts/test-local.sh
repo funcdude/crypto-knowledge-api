@@ -69,14 +69,14 @@ fi
 # 1. Check Prerequisites
 info "Checking prerequisites..."
 run_test "Docker installed" "command -v docker"
-run_test "Docker Compose installed" "command -v docker-compose"
+run_test "Docker Compose installed" "command -v docker compose"
 run_test "Environment file exists" "test -f .env"
 
 # 2. Check if services are running
 info "Checking service status..."
-if ! docker-compose ps | grep -q "Up"; then
+if ! docker compose ps | grep -q "Up"; then
     warn "Services not running. Starting now..."
-    docker-compose up -d --build
+    docker compose up -d --build
     sleep 20
     info "Waiting for services to be ready..."
 fi
@@ -106,7 +106,7 @@ fi
 
 # 6. Database Connection Tests
 info "Testing database connections..."
-if docker-compose exec -T db pg_isready -U postgres > /dev/null 2>&1; then
+if docker compose exec -T db pg_isready -U postgres > /dev/null 2>&1; then
     log "PostgreSQL Connection: PASSED"
     TEST_RESULTS+=("PASS: PostgreSQL Connection")
 else
@@ -115,7 +115,7 @@ else
 fi
 
 # 7. Cache Connection Tests
-if docker-compose exec -T redis redis-cli ping | grep -q "PONG" > /dev/null 2>&1; then
+if docker compose exec -T redis redis-cli ping | grep -q "PONG" > /dev/null 2>&1; then
     log "Redis Connection: PASSED"
     TEST_RESULTS+=("PASS: Redis Connection")
 else
@@ -125,7 +125,7 @@ fi
 
 # 8. Container Health Tests
 info "Testing container health..."
-UNHEALTHY_CONTAINERS=$(docker-compose ps | grep -v "Up" | grep -v "NAME" | wc -l)
+UNHEALTHY_CONTAINERS=$(docker compose ps | grep -v "Up" | grep -v "NAME" | wc -l)
 
 if [ "$UNHEALTHY_CONTAINERS" -eq 0 ]; then
     log "All Containers Healthy: PASSED"
@@ -140,15 +140,15 @@ info "Testing environment configuration..."
 ENV_VARS_MISSING=()
 
 # Check critical environment variables
-if ! docker-compose exec -T api env | grep -q "OPENAI_API_KEY=sk-"; then
+if ! docker compose exec -T api env | grep -q "OPENAI_API_KEY=sk-"; then
     ENV_VARS_MISSING+=("OPENAI_API_KEY")
 fi
 
-if ! docker-compose exec -T api env | grep -q "PINECONE_API_KEY="; then
+if ! docker compose exec -T api env | grep -q "PINECONE_API_KEY="; then
     ENV_VARS_MISSING+=("PINECONE_API_KEY")
 fi
 
-if ! docker-compose exec -T api env | grep -q "PAYMENT_ADDRESS=0x"; then
+if ! docker compose exec -T api env | grep -q "PAYMENT_ADDRESS=0x"; then
     ENV_VARS_MISSING+=("PAYMENT_ADDRESS")
 fi
 
@@ -237,7 +237,7 @@ echo "============="
 if [ $FAILED -eq 0 ]; then
     echo "✅ All critical tests passed! Your API is ready for:"
     echo "   1. Add book content to ./data/ directory"
-    echo "   2. Run: docker-compose run --rm processor"
+    echo "   2. Run: docker compose run --rm processor"
     echo "   3. Test real knowledge queries"
     echo "   4. Deploy to production when ready"
     echo ""
@@ -248,14 +248,14 @@ if [ $FAILED -eq 0 ]; then
 else
     echo "❌ Some tests failed. Please check:"
     echo "   1. All environment variables in .env file"
-    echo "   2. Docker containers are running: docker-compose ps"
-    echo "   3. Check logs: docker-compose logs"
+    echo "   2. Docker containers are running: docker compose ps"
+    echo "   3. Check logs: docker compose logs"
     echo "   4. Review TESTING.md for detailed troubleshooting"
 fi
 
 echo ""
 echo "📖 For detailed testing guide, see: TESTING.md"
-echo "🔧 For troubleshooting, run: docker-compose logs -f"
+echo "🔧 For troubleshooting, run: docker compose logs -f"
 
 # Exit with error code if any tests failed
 if [ $FAILED -gt 0 ]; then

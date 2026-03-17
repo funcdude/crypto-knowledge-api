@@ -42,7 +42,7 @@ check_prerequisites() {
     fi
     
     # Check Docker Compose
-    if ! command -v docker-compose &> /dev/null; then
+    if ! command -v docker compose &> /dev/null; then
         error "Docker Compose is not installed. Please install Docker Compose first."
         exit 1
     fi
@@ -64,14 +64,14 @@ setup_database() {
     log "Setting up database..."
     
     # Start database container
-    docker-compose up -d db redis
+    docker compose up -d db redis
     
     # Wait for database to be ready
     log "Waiting for database to be ready..."
     sleep 10
     
     # Run migrations (if any)
-    # docker-compose exec -T api alembic upgrade head
+    # docker compose exec -T api alembic upgrade head
     
     log "Database setup complete ✅"
 }
@@ -81,7 +81,7 @@ start_services() {
     log "Building and starting services..."
     
     # Build and start all services
-    docker-compose up -d --build
+    docker compose up -d --build
     
     # Wait for services to be ready
     log "Waiting for services to start..."
@@ -127,7 +127,7 @@ setup_bankr() {
     log "Verifying Bankr connection..."
     
     # This would test the Bankr API connection
-    # docker-compose exec -T api python -c "
+    # docker compose exec -T api python -c "
     # import os
     # from app.services.bankr_service import BankrService
     # service = BankrService(os.getenv('BANKR_API_KEY'))
@@ -147,13 +147,13 @@ process_content() {
         log "Found book data, processing..."
         
         # Run content processing
-        docker-compose run --rm processor
+        docker compose run --rm processor
         
         log "Content processing complete ✅"
     else
         warn "No book data found in ./data directory"
         warn "API will work but won't have content to search"
-        warn "Add PDF files to ./data directory and run: docker-compose run --rm processor"
+        warn "Add PDF files to ./data directory and run: docker compose run --rm processor"
     fi
 }
 
@@ -162,7 +162,7 @@ deploy_production() {
     log "Deploying to production..."
     
     # Build production images
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+    docker compose -f docker-compose.yml -f docker compose.prod.yml build
     
     # Deploy (this would vary based on your deployment target)
     # Examples for different platforms:
@@ -213,7 +213,7 @@ show_summary() {
     echo "  1. Test the API at http://localhost:${BACKEND_PORT}/docs"
     echo "  2. Try the frontend demo at http://localhost:${FRONTEND_PORT}"
     echo "  3. Add your book content to ./data directory"
-    echo "  4. Run content processing: docker-compose run --rm processor"
+    echo "  4. Run content processing: docker compose run --rm processor"
     echo "  5. Configure your payment address in .env"
     echo ""
     echo "💰 Payment Configuration:"
@@ -223,10 +223,10 @@ show_summary() {
     echo "  • Pricing: $0.001 - $0.02 per query"
     echo ""
     echo "🔧 Management Commands:"
-    echo "  • View logs: docker-compose logs -f"
-    echo "  • Stop services: docker-compose down"
-    echo "  • Rebuild: docker-compose up -d --build"
-    echo "  • Process content: docker-compose run --rm processor"
+    echo "  • View logs: docker compose logs -f"
+    echo "  • Stop services: docker compose down"
+    echo "  • Rebuild: docker compose up -d --build"
+    echo "  • Process content: docker compose run --rm processor"
     echo ""
 }
 
