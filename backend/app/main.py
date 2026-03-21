@@ -66,21 +66,29 @@ async def lifespan(app: FastAPI):
     )
     logger.info("X402 payment manager initialized")
     
-    # Initialize AI services
-    app.state.embedding_service = EmbeddingService(
-        openai_api_key=settings.OPENAI_API_KEY,
-        pinecone_api_key=settings.PINECONE_API_KEY,
-        pinecone_environment=settings.PINECONE_ENVIRONMENT
-    )
-    logger.info("AI embedding service initialized")
+    # Initialize AI services (with graceful degradation)
+    try:
+        app.state.embedding_service = EmbeddingService(
+            openai_api_key=settings.OPENAI_API_KEY,
+            pinecone_api_key=settings.PINECONE_API_KEY,
+            pinecone_environment=settings.PINECONE_ENVIRONMENT
+        )
+        logger.info("AI embedding service initialized")
+    except Exception as e:
+        logger.warning("AI embedding service initialization failed (will retry on use)", error=str(e))
+        app.state.embedding_service = None
     
-    # Initialize knowledge service
-    app.state.knowledge_service = KnowledgeService(
-        db_pool=app.state.db_pool,
-        embedding_service=app.state.embedding_service,
-        redis_client=app.state.redis_client
-    )
-    logger.info("Knowledge service initialized")
+    # Initialize knowledge service (with graceful degradation)
+    try:
+        app.state.knowledge_service = KnowledgeService(
+            db_pool=app.state.db_pool,
+            embedding_service=app.state.embedding_service,
+            redis_client=app.state.redis_client
+        )
+        logger.info("Knowledge service initialized")
+    except Exception as e:
+        logger.warning("Knowledge service initialization failed (will retry on use)", error=str(e))
+        app.state.knowledge_service = None
     
     logger.info("🚀 Crypto Knowledge API startup complete!")
     

@@ -2,7 +2,8 @@
 
 from functools import lru_cache
 from typing import Optional, List
-from pydantic import BaseSettings, validator
+from pydantic_settings import BaseSettings
+from pydantic import validator, Field
 import os
 
 class Settings(BaseSettings):
