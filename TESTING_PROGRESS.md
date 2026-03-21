@@ -192,3 +192,16 @@ async with db_pool.acquire() as conn:  # ← This is correct
 - Status: Branch `fix/pinecone-integration-and-testing`
 - Book: "Cryptocurrencies Decrypted" already embedded in Pinecone
 - Test coverage: Basic health checks passing, search flow ready for validation
+
+---
+
+## 🔗 Pinecone Integration Testing (Next Phase)
+
+See `PINECONE_TESTING.md` for detailed testing procedures and `scripts/test-pinecone.sh` for automated validation.
+
+**Requirements to begin**:
+1. Real Pinecone API key (ask Oskar)
+2. Book content pre-loaded in `crypto-knowledge` index (✅ already done)
+3. OpenAI API key for embeddings
+
+**Expected timeline**: 45 minutes from credentials → full validation
