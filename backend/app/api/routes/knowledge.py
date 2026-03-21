@@ -82,11 +82,13 @@ def get_analytics_service(request: Request) -> AnalyticsService:
 async def require_payment(
     request: Request,
     tier: str,
-    description: str,
-    x402_manager: X402Manager = Depends(get_x402_manager),
-    payment_cache: PaymentCache = Depends(get_payment_cache)
+    description: str
 ) -> bool:
     """Check for X402 payment or return 402 Payment Required"""
+    
+    # Resolve dependencies manually since this is called directly, not as route dependency
+    x402_manager = request.app.state.x402_manager
+    payment_cache = PaymentCache(request.app.state.redis_client)
     
     payment_header = request.headers.get("x-payment")
     
