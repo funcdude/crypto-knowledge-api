@@ -59,7 +59,7 @@ Set these in Railway dashboard: **Settings → Variables**
 
 ```
 # Pinecone Configuration
-PINECONE_API_KEY=pcsk_2xRuJP_3i4UubNK8v7KkLVfPGC96kJcTznjjmDtxGVtf7bpSSuKp6c7i47YugSofy2bkf4
+PINECONE_API_KEY=your-pinecone-api-key-here
 PINECONE_ENVIRONMENT=us-east-1
 PINECONE_INDEX_NAME=crypto-knowledge
 
