@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone output for Docker
-  output: 'standalone',
-  
   // Environment variables available to the client
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
@@ -42,11 +39,6 @@ const nextConfig = {
     domains: ['localhost'],
   },
 
-  // Experimental features
-  experimental: {
-    // Enable server components
-    serverComponentsExternalPackages: [],
-  },
 };
 
 module.exports = nextConfig;
