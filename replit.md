@@ -1,46 +1,69 @@
-# Crypto Knowledge API — Next.js Frontend
+# Crypto Knowledge API
 
 ## Overview
-Next.js frontend for the Crypto Knowledge API — an AI-monetized book service using X402 micropayments on Base L2.
+Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto knowledge from "Cryptocurrencies Decrypted" via X402 micropayments on Base L2.
 
 ## Stack
-- **Framework**: Next.js 13.5.8 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Package Manager**: npm
+- **Frontend**: Next.js 13.5.8 (App Router), TypeScript, Tailwind CSS — port 5000
+- **Backend**: FastAPI (Python 3.12) with uvicorn — port 8000
+- **Database**: PostgreSQL (Replit managed, `DATABASE_URL` auto-injected)
+- **Cache**: Redis 7.2 (local, `redis://localhost:6379/0`)
+- **AI**: OpenAI (embeddings) + Pinecone (vector search)
+- **Payments**: X402 micropayments on Base L2 via Coinbase facilitator
 
 ## Project Structure
 ```
 /
 ├── src/
-│   ├── app/          # Next.js App Router pages (layout.tsx, page.tsx, globals.css)
+│   ├── app/          # Next.js App Router (layout.tsx, page.tsx, globals.css)
 │   ├── components/   # React components (SearchDemo, PricingDisplay, ApiDocumentation)
-│   └── lib/          # Utilities (utils.ts - cn helper)
-├── backend/          # Python FastAPI backend (separate service)
-├── next.config.js    # Next.js configuration
-├── tailwind.config.js
-└── tsconfig.json
+│   └── lib/          # Utilities (cn helper)
+├── backend/
+│   └── app/
+│       ├── main.py          # FastAPI app entrypoint
+│       ├── core/            # Config, database, cache, x402 manager
+│       ├── api/routes/      # health, knowledge, x402 routes
+│       └── services/        # knowledge_service, embedding_service, analytics_service
+├── next.config.js
+├── package.json
+└── requirements.txt
 ```
 
-## Running the App
-The app runs on **port 5000** (required for Replit preview):
-- **Dev**: `npm run dev` → `next dev -p 5000 -H 0.0.0.0`
-- **Build**: `npm run build`
-- **Start**: `npm start` → `next start -p 5000 -H 0.0.0.0`
+## Workflows
+- **Start application**: `npm run dev` — Next.js frontend on port 5000 (webview)
+- **Start Backend**: Redis daemon + `uvicorn app.main:app` on port 8000 (console)
 
-## Environment Variables
-See `.env.example` for all required variables:
-- `NEXT_PUBLIC_API_URL` — Backend API URL (default: `http://localhost:8000`)
-- `NEXT_PUBLIC_PAYMENT_ADDRESS` — X402 payment wallet address
-- `NEXT_PUBLIC_CHAIN_ID` — Base L2 chain ID (8453)
-
-Backend also needs: `DATABASE_URL`, `REDIS_URL`, `OPENAI_API_KEY`, `PINECONE_API_KEY`
+## Environment Variables / Secrets
+| Variable | Type | Notes |
+|---|---|---|
+| `DATABASE_URL` | Secret (runtime) | Replit PostgreSQL, auto-managed |
+| `OPENAI_API_KEY` | Secret | For embeddings |
+| `PINECONE_API_KEY` | Secret | For vector search |
+| `REDIS_URL` | Env var | `redis://localhost:6379/0` |
+| `PINECONE_INDEX_NAME` | Env var | `crypto-knowledge` |
+| `SKIP_PAYMENT_VERIFY` | Env var | `true` in dev, `false` in prod |
+| `DEBUG` | Env var | `true` in dev |
+| `CORS_ORIGINS` | Env var | `*` in dev |
+| `PAYMENT_ADDRESS` | Env var | Ethereum wallet for X402 |
+| `SECRET_KEY` | Env var | App secret key |
 
 ## Replit Migration Notes
-- **Next.js downgraded from 14 to 13.5.8**: The SWC native binary bundled with Next.js 14 caused Bus errors (CPU compatibility issue with Replit's container). Next.js 13.5.8's SWC binary is compatible.
-- **Port updated to 5000**: Required for Replit's webview proxy.
-- **`output: 'standalone'` removed**: Docker-only setting, not needed on Replit.
-- **`experimental.serverComponentsExternalPackages` removed**: Invalid config key for this version.
+- **Next.js downgraded 14→13.5.8**: SWC native binary in v14 caused Bus errors; v13.5.8 binary is compatible.
+- **Port 5000**: Required for Replit webview proxy.
+- **`output: 'standalone'` removed**: Docker-only setting.
+- **Redis installed via Nix**: `redis-server` is started by the backend workflow before uvicorn.
+- **PostgreSQL**: Provided by Replit's managed database integration (`DATABASE_URL` auto-set).
+- **`SKIP_PAYMENT_VERIFY=true`**: Allows testing without real X402 blockchain verification in dev.
 
-## Backend
-The Python FastAPI backend lives in `backend/`. It requires PostgreSQL, Redis, OpenAI, and Pinecone. Run separately on port 8000.
+## API Pricing Tiers
+| Tier | Price | Description |
+|---|---|---|
+| snippet | $0.001 | Quick answer, 1-2 sentences |
+| explanation | $0.005 | Detailed explanation |
+| analysis | $0.01 | Comprehensive analysis |
+| chapter_summary | $0.02 | Full chapter insights |
+
+## Next Steps
+- Populate the Pinecone index with book content embeddings (see `scripts/`)
+- Set `SKIP_PAYMENT_VERIFY=false` and `DEBUG=false` for production
+- Configure `ALLOWED_HOSTS` and tighten `CORS_ORIGINS` for production
