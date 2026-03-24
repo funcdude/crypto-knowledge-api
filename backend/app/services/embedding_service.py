@@ -3,7 +3,7 @@
 import asyncio
 from typing import List, Dict, Any, Optional
 import openai
-import pinecone
+from pinecone import Pinecone
 import numpy as np
 import structlog
 
@@ -11,41 +11,32 @@ logger = structlog.get_logger()
 
 class EmbeddingService:
     """Service for generating and managing embeddings for semantic search"""
-    
-    def __init__(self, openai_api_key: str, pinecone_api_key: str, pinecone_environment: str):
+
+    def __init__(self, openai_api_key: str, pinecone_api_key: str, index_name: str = "crypto-knowledge"):
         self.openai_client = openai.OpenAI(api_key=openai_api_key)
-        
-        # Initialize Pinecone
-        pinecone.init(
-            api_key=pinecone_api_key,
-            environment=pinecone_environment
-        )
-        
-        self.index_name = "crypto-knowledge"
-        self.embedding_model = "text-embedding-3-large"
-        self.embedding_dimension = 3072  # text-embedding-3-large dimensions
-        
-        # Create or connect to index
-        self.index = self._get_or_create_index()
-        
-    def _get_or_create_index(self):
-        """Get existing index or create new one"""
+
+        # Initialize Pinecone v3 client
+        self._pc = Pinecone(api_key=pinecone_api_key)
+
+        self.index_name = index_name
+        self.embedding_model = "text-embedding-ada-002"
+        self.embedding_dimension = 1536  # matches the Pinecone index dimension
+
+        # Connect to existing index
+        self.index = self._get_index()
+
+    def _get_index(self):
+        """Connect to existing Pinecone index"""
         try:
-            # Check if index exists
-            if self.index_name not in pinecone.list_indexes():
-                logger.info(f"Creating Pinecone index: {self.index_name}")
-                pinecone.create_index(
-                    name=self.index_name,
-                    dimension=self.embedding_dimension,
-                    metric="cosine",
-                    pods=1,
-                    pod_type="p1.x1"
+            existing = [i.name for i in self._pc.list_indexes()]
+            if self.index_name not in existing:
+                raise RuntimeError(
+                    f"Pinecone index '{self.index_name}' not found. "
+                    f"Available indexes: {existing}"
                 )
-            
-            return pinecone.Index(self.index_name)
-            
+            return self._pc.Index(self.index_name)
         except Exception as e:
-            logger.error("Failed to initialize Pinecone index", error=str(e))
+            logger.error("Failed to connect to Pinecone index", error=str(e))
             raise
     
     async def get_embedding(self, text: str) -> List[float]:
@@ -78,7 +69,7 @@ class EmbeddingService:
         top_k: int = 5,
         topics: Optional[List[str]] = None,
         complexity: Optional[str] = None,
-        min_score: float = 0.7
+        min_score: float = 0.5
     ) -> List[Dict[str, Any]]:
         """Search for similar content using embedding"""
         
@@ -102,14 +93,32 @@ class EmbeddingService:
             results = []
             for match in query_response.matches:
                 if match.score >= min_score:
+                    meta = match.metadata or {}
+                    # Log actual metadata keys on first result so we can verify field names
+                    if not results:
+                        logger.info("Pinecone metadata keys", keys=list(meta.keys()), score=float(match.score))
+                    # Try common field name variants for content and chapter
+                    content = (
+                        meta.get("content")
+                        or meta.get("text")
+                        or meta.get("page_content")
+                        or meta.get("chunk_text")
+                        or ""
+                    )
+                    chapter = (
+                        meta.get("chapter")
+                        or meta.get("source")
+                        or meta.get("source_file")
+                        or "Unknown"
+                    )
                     result = {
                         "id": match.id,
                         "score": float(match.score),
-                        "content": match.metadata.get("content", ""),
-                        "chapter": match.metadata.get("chapter", "Unknown"),
-                        "topics": match.metadata.get("topics", []),
-                        "complexity": match.metadata.get("complexity", "intermediate"),
-                        "word_count": match.metadata.get("word_count", 0)
+                        "content": content,
+                        "chapter": chapter,
+                        "topics": meta.get("topics", []),
+                        "complexity": meta.get("complexity", "intermediate"),
+                        "word_count": meta.get("word_count", len(content.split()) if content else 0)
                     }
                     results.append(result)
             

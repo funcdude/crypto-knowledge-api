@@ -19,6 +19,7 @@ from app.core.database import get_db_pool
 from app.core.cache import get_redis_client
 from app.core.x402 import X402Manager
 from app.api.routes import knowledge, health, x402
+from app.api.routes.knowledge import _PaymentRequired
 from app.services.knowledge_service import KnowledgeService
 from app.services.embedding_service import EmbeddingService
 
@@ -71,7 +72,7 @@ async def lifespan(app: FastAPI):
         app.state.embedding_service = EmbeddingService(
             openai_api_key=settings.OPENAI_API_KEY,
             pinecone_api_key=settings.PINECONE_API_KEY,
-            pinecone_environment=settings.PINECONE_ENVIRONMENT
+            index_name=settings.PINECONE_INDEX_NAME
         )
         logger.info("AI embedding service initialized")
     except Exception as e:
@@ -133,6 +134,20 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# x402 Payment Required handler — x402 v2: PAYMENT-REQUIRED header is base64-encoded JSON
+import json as _json
+import base64 as _base64
+@app.exception_handler(_PaymentRequired)
+async def payment_required_handler(request: Request, exc: _PaymentRequired):
+    accepts = exc.body.get("accepts", [])
+    payload = {"x402Version": 2, "accepts": accepts, "error": "Payment Required"}
+    encoded = _base64.b64encode(_json.dumps(payload).encode()).decode()
+    return JSONResponse(
+        status_code=402,
+        content={"error": "Payment Required"},
+        headers={"PAYMENT-REQUIRED": encoded}
+    )
 
 # Global exception handler
 @app.exception_handler(Exception)

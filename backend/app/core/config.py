@@ -28,7 +28,6 @@ class Settings(BaseSettings):
     # AI Services
     OPENAI_API_KEY: str
     PINECONE_API_KEY: str
-    PINECONE_ENVIRONMENT: str = "us-west1-gcp-free"
     PINECONE_INDEX_NAME: str = "crypto-knowledge"
     
     # X402 Payment Configuration
@@ -58,6 +57,9 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 100
     RATE_LIMIT_BURST: int = 10
+
+    # Dev / testing
+    SKIP_PAYMENT_VERIFY: bool = False  # Set to true to bypass blockchain/facilitator verification
     
     @validator("DATABASE_URL")
     def validate_database_url(cls, v):

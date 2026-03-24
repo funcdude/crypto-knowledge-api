@@ -115,38 +115,60 @@ class X402Manager:
             expires_at=datetime.utcnow() + timedelta(minutes=10)
         )
     
-    def format_402_response(self, payment_req: PaymentRequirement) -> Dict[str, Any]:
-        """Format HTTP 402 Payment Required response"""
+    def format_402_response(self, payment_req: PaymentRequirement, resource: str = "") -> Dict[str, Any]:
+        """Format HTTP 402 Payment Required response per x402 v2 spec"""
         return {
-            "error": "Payment required",
-            "payment": {
-                "chainId": payment_req.chain_id,
-                "to": payment_req.to,
-                "amount": payment_req.amount,
-                "currency": payment_req.currency,
-                "contract": self.usdc_address if payment_req.currency == "USDC" else None
+            "x402Version": 2,
+            "error": "Payment Required",
+            "resource": {
+                "url": resource,
+                "description": payment_req.description,
+                "mimeType": "application/json",
             },
-            "description": payment_req.description,
-            "price_usd": payment_req.price_usd,
-            "expires_at": payment_req.expires_at.isoformat() if payment_req.expires_at else None,
-            "facilitator": self.facilitator_url
+            "accepts": [
+                {
+                    "scheme": "exact",
+                    "network": "eip155:8453",  # Base mainnet in CAIP-2 format
+                    "asset": str(self.usdc_address),
+                    "amount": payment_req.amount,
+                    "payTo": payment_req.to,
+                    "maxTimeoutSeconds": 300,
+                    "extra": {
+                        "name": "USD Coin",
+                        "version": "2",
+                        "decimals": 6
+                    }
+                }
+            ]
         }
     
     def parse_payment_header(self, payment_header: str) -> Dict[str, Any]:
-        """Parse X-Payment header from X402 request"""
+        """Parse PAYMENT-SIGNATURE header from X402 v2 request (base64-encoded JSON)"""
+        import base64 as _b64
         try:
-            # Handle both JSON and simple formats
-            if payment_header.startswith("{"):
-                return json.loads(payment_header)
-            else:
-                # Simple format: "tx_hash:chain_id" or just "tx_hash"
-                parts = payment_header.split(":")
+            # x402 v2: base64-encoded PaymentPayload
+            decoded = _b64.b64decode(payment_header + "==").decode()  # pad for safety
+            data = json.loads(decoded)
+
+            # Extract transaction hash from x402 v2 payload
+            if "payload" in data:
+                payload = data["payload"]
+                tx_hash = payload.get("transaction") or payload.get("transaction_hash") or payload.get("txHash")
+                chain_id = data.get("accepted", {}).get("network", "eip155:8453").split(":")[-1]
                 return {
-                    "transaction_hash": parts[0],
-                    "chain_id": int(parts[1]) if len(parts) > 1 else self.chain_id
+                    "transaction_hash": tx_hash,
+                    "chain_id": int(chain_id) if chain_id.isdigit() else self.chain_id,
+                    "raw": data
                 }
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.error("Failed to parse payment header", header=payment_header, error=str(e))
+
+            # Legacy JSON format
+            if "transaction_hash" in data:
+                return data
+
+            raise ValueError("No transaction hash found in payment payload")
+
+        except Exception as e:
+            logger.error("Failed to parse payment header", error=str(e))
             raise ValueError(f"Invalid payment header format: {e}")
     
     async def verify_payment(
@@ -155,66 +177,112 @@ class X402Manager:
         expected_amount: str,
         expected_recipient: Optional[str] = None
     ) -> PaymentProof:
-        """Verify payment on blockchain"""
-        
+        """Verify x402 v2 payment via Coinbase facilitator (EIP-3009 authorization flow)"""
+
+        raw = payment_data.get("raw")
+
+        # x402 v2: forward raw PaymentPayload to facilitator /settle
+        if raw:
+            return await self._verify_via_facilitator(raw, expected_amount)
+
+        # Legacy: direct blockchain tx lookup
         tx_hash = payment_data.get("transaction_hash")
-        chain_id = payment_data.get("chain_id", self.chain_id)
-        
         if not tx_hash:
             raise ValueError("Transaction hash required")
-            
-        if chain_id != self.chain_id:
-            raise ValueError(f"Invalid chain ID: {chain_id}")
-        
+        return await self._verify_on_chain(tx_hash, expected_amount, expected_recipient)
+
+    async def _verify_via_facilitator(
+        self,
+        payment_payload: Dict[str, Any],
+        expected_amount: str
+    ) -> PaymentProof:
+        """Verify payment via Coinbase facilitator /settle or skip in dev mode"""
+        from app.core.config import get_settings as _gs
+        if _gs().SKIP_PAYMENT_VERIFY:
+            logger.warning("SKIP_PAYMENT_VERIFY=true — skipping payment verification (dev mode)")
+            return PaymentProof(
+                transaction_hash="dev-skip",
+                from_address="dev",
+                to_address=self.payment_address,
+                amount=expected_amount,
+                currency="USDC",
+                chain_id=self.chain_id,
+                timestamp=datetime.utcnow(),
+            )
+
         try:
-            # Get transaction receipt
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                resp = await client.post(
+                    f"{self.facilitator_url}/settle",
+                    json=payment_payload,
+                    headers={"Content-Type": "application/json"}
+                )
+
+            if resp.status_code not in (200, 201):
+                logger.error("Facilitator settle failed", status=resp.status_code, body=resp.text)
+                raise ValueError(f"Facilitator rejected payment: {resp.status_code} {resp.text}")
+
+            result = resp.json()
+            logger.info("Facilitator settled payment", result=result)
+
+            return PaymentProof(
+                transaction_hash=result.get("transaction", result.get("txHash", "facilitator-settled")),
+                from_address=result.get("from", "unknown"),
+                to_address=self.payment_address,
+                amount=expected_amount,
+                currency="USDC",
+                chain_id=self.chain_id,
+                timestamp=datetime.utcnow(),
+            )
+
+        except httpx.RequestError as e:
+            raise ValueError(f"Facilitator unreachable: {e}")
+
+    async def _verify_on_chain(
+        self,
+        tx_hash: str,
+        expected_amount: str,
+        expected_recipient: Optional[str] = None
+    ) -> PaymentProof:
+        """Verify payment by looking up the transaction on-chain"""
+        try:
             tx_receipt = self.w3.eth.get_transaction_receipt(tx_hash)
             tx = self.w3.eth.get_transaction(tx_hash)
-            
+
             if tx_receipt.status != 1:
                 raise ValueError("Transaction failed")
-            
-            # Verify it's a USDC transfer to our address
+
             if tx.to.lower() != self.usdc_address.lower():
                 raise ValueError("Not a USDC transaction")
-            
-            # Parse transfer logs to get actual transfer details
+
             transfer_data = self._parse_usdc_transfer(tx_receipt)
-            
             if not transfer_data:
                 raise ValueError("No USDC transfer found in transaction")
-            
-            # Verify recipient
+
             recipient = expected_recipient or self.payment_address
             if transfer_data["to"].lower() != recipient.lower():
                 raise ValueError(f"Payment sent to wrong address: {transfer_data['to']}")
-            
-            # Verify amount (allow small tolerance for fees)
+
             expected_amount_int = int(expected_amount)
             actual_amount_int = int(transfer_data["amount"])
-            
-            if actual_amount_int < expected_amount_int * 0.95:  # 5% tolerance
+            if actual_amount_int < expected_amount_int * 0.95:
                 raise ValueError(
                     f"Insufficient payment: expected {expected_amount_int}, got {actual_amount_int}"
                 )
-            
+
             return PaymentProof(
                 transaction_hash=tx_hash,
                 from_address=transfer_data["from"],
                 to_address=transfer_data["to"],
                 amount=transfer_data["amount"],
                 currency="USDC",
-                chain_id=chain_id,
-                timestamp=datetime.utcnow(),  # Could get block timestamp
+                chain_id=self.chain_id,
+                timestamp=datetime.utcnow(),
                 block_number=tx_receipt.blockNumber
             )
-            
+
         except Exception as e:
-            logger.error(
-                "Payment verification failed", 
-                tx_hash=tx_hash, 
-                error=str(e)
-            )
+            logger.error("On-chain payment verification failed", tx_hash=tx_hash, error=str(e))
             raise ValueError(f"Payment verification failed: {e}")
     
     def _parse_usdc_transfer(self, tx_receipt) -> Optional[Dict[str, Any]]:

@@ -3,6 +3,7 @@
 from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Request, HTTPException, Depends, Query
 from fastapi.responses import JSONResponse
+from starlette.responses import Response
 from pydantic import BaseModel, validator
 import structlog
 
@@ -13,6 +14,11 @@ from app.services.analytics_service import AnalyticsService
 
 logger = structlog.get_logger()
 router = APIRouter()
+
+class _PaymentRequired(Exception):
+    """Raised to return a bare HTTP 402 with x402-spec JSON body (no FastAPI detail wrapper)."""
+    def __init__(self, body: dict):
+        self.body = body
 
 # Request/Response Models
 class KnowledgeQuery(BaseModel):
@@ -90,8 +96,12 @@ async def require_payment(
     x402_manager = request.app.state.x402_manager
     payment_cache = PaymentCache(request.app.state.redis_client)
     
-    payment_header = request.headers.get("x-payment")
-    
+    # x402 v2 uses PAYMENT-SIGNATURE; also accept legacy x-payment header
+    payment_header = (
+        request.headers.get("payment-signature")
+        or request.headers.get("x-payment")
+    )
+
     if not payment_header:
         # No payment - return 402 Payment Required
         payment_req = x402_manager.create_payment_requirement(
@@ -100,41 +110,43 @@ async def require_payment(
             request_id=getattr(request.state, 'request_id', None)
         )
         
-        response_data = x402_manager.format_402_response(payment_req)
-        
+        resource = str(request.url)
+        response_data = x402_manager.format_402_response(payment_req, resource=resource)
+
         logger.info(
-            "Payment required", 
-            tier=tier, 
+            "Payment required",
+            tier=tier,
             price=payment_req.price_usd,
             client_ip=request.client.host
         )
-        
-        raise HTTPException(status_code=402, detail=response_data)
+
+        raise _PaymentRequired(response_data)
     
     # Parse and verify payment
     try:
         payment_data = x402_manager.parse_payment_header(payment_header)
         tx_hash = payment_data.get("transaction_hash")
-        
-        # Check if payment already used
-        if await payment_cache.is_payment_used(tx_hash):
+
+        # Only deduplicate when we have a real tx hash
+        if tx_hash and await payment_cache.is_payment_used(tx_hash):
             raise HTTPException(
                 status_code=400,
                 detail={"error": "Payment already used", "transaction": tx_hash}
             )
-        
+
         # Get expected payment amount
         pricing = get_pricing_config()
         expected_amount = str(int(pricing[tier]["price"] * 1_000_000))  # USDC has 6 decimals
-        
-        # Verify payment on blockchain
+
+        # Verify payment on blockchain / facilitator
         payment_proof = await x402_manager.verify_payment(
             payment_data=payment_data,
             expected_amount=expected_amount
         )
-        
-        # Mark payment as used
-        await payment_cache.mark_payment_used(tx_hash, payment_proof)
+
+        # Only cache when we have a real tx hash
+        if tx_hash:
+            await payment_cache.mark_payment_used(tx_hash, payment_proof)
         
         logger.info(
             "Payment verified",

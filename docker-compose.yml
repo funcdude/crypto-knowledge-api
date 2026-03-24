@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # FastAPI Backend
   api:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
@@ -13,14 +13,18 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PINECONE_API_KEY=${PINECONE_API_KEY}
-      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT:-us-west1-gcp-free}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME:-crypto-knowledge}
       - PAYMENT_ADDRESS=${PAYMENT_ADDRESS:-0x28e6b3e3e32308787f50e6d99e2b98745b381946}
       - X402_FACILITATOR_URL=${X402_FACILITATOR_URL:-https://facilitator.coinbase.com}
       - BANKR_API_KEY=${BANKR_API_KEY}
       - DEBUG=true
+      - SKIP_PAYMENT_VERIFY=true
     depends_on:
       - db
       - redis
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
