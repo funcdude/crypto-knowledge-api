@@ -8,6 +8,7 @@ import structlog
 
 from app.core.config import get_settings, get_pricing_config
 from app.services.embedding_service import EmbeddingService
+from app.services.text_utils import fix_concatenated_text, should_fix
 
 logger = structlog.get_logger()
 
@@ -196,7 +197,15 @@ class KnowledgeService:
         for result in results[:max_results]:
             # Extract content based on tier
             content = result.get("content", "")
-            
+
+            # Re-insert spaces lost during PDF text extraction
+            if should_fix(content):
+                fixed_lines = [
+                    fix_concatenated_text(line) if line.strip() else line
+                    for line in content.splitlines()
+                ]
+                content = "\n".join(fixed_lines)
+
             if tier == "snippet":
                 # Extract key sentence(s)
                 sentences = content.split(". ")
