@@ -134,12 +134,13 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-6">About the Source</h2>
             <div className="bg-white p-8 rounded-2xl shadow-sm">
               <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="md:w-1/3">
-                  <img
-                    src="/book-cover.png"
-                    alt="Cryptocurrencies Decrypted book cover"
-                    className="max-w-full h-auto rounded-lg shadow-md"
-                  />
+                <div className="md:w-1/3 flex justify-center">
+                  <div className="w-48 h-64 rounded-lg shadow-md bg-gradient-to-b from-blue-800 to-indigo-900 flex flex-col items-center justify-center p-4 text-white text-center">
+                    <div className="text-4xl mb-3">₿</div>
+                    <div className="text-xs font-bold leading-tight mb-2">CRYPTOCURRENCIES DECRYPTED</div>
+                    <div className="text-xs opacity-75 leading-tight">Hope and Economic Freedom for a Broken Financial System</div>
+                    <div className="mt-auto text-xs opacity-60">Oskar Hurme</div>
+                  </div>
                 </div>
                 <div className="md:w-2/3 text-left">
                   <h3 className="text-2xl font-bold mb-4">

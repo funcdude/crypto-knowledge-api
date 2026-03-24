@@ -6,33 +6,24 @@ import { cn } from '@/lib/utils'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Next.js Starter',
-  description: 'Production-ready Next.js application with TypeScript and Tailwind',
-  keywords: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS'],
-  authors: [{ name: 'Your Name' }],
-  creator: 'Your Name',
+  metadataBase: new URL('https://localhost:5000'),
+  title: 'Crypto Knowledge API',
+  description: 'Expert crypto knowledge from "Cryptocurrencies Decrypted" by Oskar Hurme, served via X402 micropayments on Base L2.',
+  keywords: ['crypto', 'bitcoin', 'blockchain', 'X402', 'AI agents', 'micropayments'],
+  authors: [{ name: 'Oskar Hurme' }],
+  creator: 'Oskar Hurme',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://your-domain.com',
-    siteName: 'Next.js Starter',
-    title: 'Next.js Starter',
-    description: 'Production-ready Next.js application with TypeScript and Tailwind',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Next.js Starter',
-      },
-    ],
+    siteName: 'Crypto Knowledge API',
+    title: 'Crypto Knowledge API — Expert Knowledge for AI Agents',
+    description: 'Expert crypto knowledge from "Cryptocurrencies Decrypted" via X402 micropayments on Base L2.',
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Next.js Starter',
-    description: 'Production-ready Next.js application with TypeScript and Tailwind',
-    images: ['/og-image.png'],
-    creator: '@yourusername',
+    card: 'summary',
+    title: 'Crypto Knowledge API',
+    description: 'Expert crypto knowledge via X402 micropayments on Base L2.',
+    creator: '@oskarhurme',
   },
   robots: {
     index: true,
