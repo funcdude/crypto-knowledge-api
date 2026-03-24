@@ -69,7 +69,7 @@ class EmbeddingService:
         top_k: int = 5,
         topics: Optional[List[str]] = None,
         complexity: Optional[str] = None,
-        min_score: float = 0.5
+        min_score: float = 0.0
     ) -> List[Dict[str, Any]]:
         """Search for similar content using embedding"""
         

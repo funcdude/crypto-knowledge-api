@@ -53,7 +53,9 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 - **`output: 'standalone'` removed**: Docker-only setting.
 - **Redis installed via Nix**: `redis-server` is started by the backend workflow before uvicorn.
 - **PostgreSQL**: Provided by Replit's managed database integration (`DATABASE_URL` auto-set).
-- **`SKIP_PAYMENT_VERIFY=true`**: Allows testing without real X402 blockchain verification in dev.
+- **`SKIP_PAYMENT_VERIFY=true` + `DEBUG=true`**: Both must be set for the payment bypass to activate — `require_payment()` returns `True` immediately when both are set, skipping X402 validation in dev.
+- **`min_score=0.0`**: Pinecone cosine scores for this index top out at ~0.85; the old threshold of 0.5 blocked all results. Default in `embedding_service.py` is now `0.0`.
+- **Next.js proxy rewrites**: `next.config.js` rewrites `/api/v1/*`, `/health/*`, and `/x402/*` to `http://localhost:8000`. `NEXT_PUBLIC_API_URL` is set to `""` (empty) so all frontend API calls are relative URLs, proxied server-side — no direct browser access to port 8000 needed.
 
 ## API Pricing Tiers
 | Tier | Price | Description |
@@ -63,7 +65,8 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 | analysis | $0.01 | Comprehensive analysis |
 | chapter_summary | $0.02 | Full chapter insights |
 
-## Next Steps
-- Populate the Pinecone index with book content embeddings (see `scripts/`)
-- Set `SKIP_PAYMENT_VERIFY=false` and `DEBUG=false` for production
-- Configure `ALLOWED_HOSTS` and tighten `CORS_ORIGINS` for production
+## Production Checklist
+- Set `SKIP_PAYMENT_VERIFY=false` and `DEBUG=false`
+- Tighten `CORS_ORIGINS` to specific allowed origins
+- Configure `ALLOWED_HOSTS`
+- Pinecone index (`crypto-knowledge`) is pre-populated with 975 vectors from the book

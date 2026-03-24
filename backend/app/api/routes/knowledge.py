@@ -92,6 +92,13 @@ async def require_payment(
 ) -> bool:
     """Check for X402 payment or return 402 Payment Required"""
     
+    settings = get_settings()
+
+    # In dev/test mode with SKIP_PAYMENT_VERIFY=true, bypass the payment check entirely
+    if settings.SKIP_PAYMENT_VERIFY and settings.DEBUG:
+        logger.info("SKIP_PAYMENT_VERIFY=true — bypassing payment requirement (dev mode)", tier=tier)
+        return True
+
     # Resolve dependencies manually since this is called directly, not as route dependency
     x402_manager = request.app.state.x402_manager
     payment_cache = PaymentCache(request.app.state.db_pool)
