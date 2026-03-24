@@ -1,489 +1,185 @@
-# Crypto Knowledge API 🚀
+# Crypto Knowledge API
 
-> **The First AI-Monetized Book**  
-> Transform "Cryptocurrencies Decrypted" into an AI-accessible knowledge service using X402 micropayments
+An AI-accessible knowledge service built on *Cryptocurrencies Decrypted* by Oskar Hurme. Queries are priced per use and paid with USDC micropayments on Base L2 via the [X402 protocol](https://x402.org).
 
-## 🎯 Overview
+**GitHub:** [funcdude/crypto-knowledge-api](https://github.com/funcdude/crypto-knowledge-api)
 
-This project creates an AI-powered API that monetizes expert crypto knowledge from Oskar Hurme's book "Cryptocurrencies Decrypted" using X402 micropayments. AI agents can access expert analysis for $0.001-0.02 USDC per query, paid instantly on Base L2.
+---
 
-### Key Features
+## How it works
 
-- 🧠 **Expert Knowledge**: Content from a fintech practitioner, not AI-generated responses
-- ⚡ **X402 Micropayments**: Pay-per-use with USDC on Base L2 (~2s settlement)
-- 🤖 **AI-Native**: Designed for autonomous AI agents (no API keys required)
-- 🔍 **Semantic Search**: Vector-based knowledge retrieval with Pinecone
-- 📊 **Tiered Pricing**: From $0.001 snippets to $0.02 chapter summaries
-- 🚀 **Production Ready**: Docker deployment, monitoring, caching, rate limiting
-
-## 🏗️ Architecture
+AI agents and humans query expert crypto knowledge from the book. Each request returns HTTP 402 with payment details. The client pays in USDC on Base, includes a `PAYMENT-SIGNATURE` header, and retries — receiving the answer.
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   AI Agent      │───▶│  X402 Payment    │───▶│   Knowledge     │
-│   (Client)      │    │   Gateway        │    │   Service       │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │  Base L2        │    │   Vector DB     │
-                       │  (USDC)         │    │  (Pinecone)     │
-                       └─────────────────┘    └─────────────────┘
+Client → POST /api/v1/search
+       ← 402 + PAYMENT-REQUIRED header (x402 v2 payload)
+Client → pays USDC on Base, constructs PAYMENT-SIGNATURE
+       → POST /api/v1/search + PAYMENT-SIGNATURE header
+       ← 200 + knowledge content
 ```
 
-### Tech Stack
+---
 
-**Backend:**
-- FastAPI with async Python
-- PostgreSQL + Redis
-- OpenAI embeddings + Pinecone vector DB
-- Web3.py for blockchain integration
-- X402 payment verification
+## Pricing
 
-**Frontend:**
-- Next.js 14 with TypeScript
-- Tailwind CSS for styling
-- Interactive API demo
+| Tier | Param | Price | Response |
+|------|-------|-------|----------|
+| Snippet | `snippet` | $0.001 | 1–2 sentences, direct passage |
+| Explanation | `explanation` | $0.005 | 1–2 paragraphs with context |
+| Analysis | `analysis` | $0.01 | Multi-angle, comprehensive |
+| Chapter Summary | `chapter_summary` | $0.02 | Full topic overview |
 
-**Infrastructure:**
-- Docker containers
-- Docker Compose for local development
-- Railway/Fly.io deployment ready
+Pricing is also available machine-readably at `GET /api/v1/pricing` (no payment required).
 
-## 🚀 Quick Start
+---
 
-### Prerequisites
+## API Reference
 
-- Docker & Docker Compose
-- OpenAI API key
-- Pinecone account
-- USDC wallet on Base L2 (for receiving payments)
+### Authentication
 
-### 1. Clone & Setup
+All knowledge endpoints require an X402 v2 payment. Free endpoint: `GET /api/v1/pricing`.
 
-```bash
-git clone https://github.com/yourusername/crypto-knowledge-api.git
-cd crypto-knowledge-api
+**X402 v2 flow:**
+1. Make request — receive HTTP 402 with `PAYMENT-REQUIRED` response header
+2. Decode the header: base64 → JSON with `accepts[]` (amount, asset, payTo, network)
+3. Transfer USDC on Base to the `payTo` address
+4. Construct a `PAYMENT-SIGNATURE` header (base64-encoded JSON payload with transaction proof)
+5. Retry the request with the `PAYMENT-SIGNATURE` header
 
-# Copy environment template
-cp .env.example .env
-
-# Edit configuration
-nano .env  # Add your API keys and wallet address
-```
-
-### 2. Configure Environment
-
-```bash
-# Required API Keys
-OPENAI_API_KEY=sk-your-openai-key
-PINECONE_API_KEY=your-pinecone-key
-PINECONE_ENVIRONMENT=us-west1-gcp-free
-
-# Payment Configuration  
-PAYMENT_ADDRESS=0x28e6b3e3e32308787f50e6d99e2b98745b381946  # Your Base wallet
-X402_FACILITATOR_URL=https://facilitator.coinbase.com
-
-# Optional: Bankr Integration
-BANKR_API_KEY=bk_your-bankr-key  # For enhanced payment processing
-```
-
-### 3. Deploy Locally
-
-```bash
-# Run deployment script
-./scripts/deploy.sh local
-
-# Or manually with Docker Compose
-docker-compose up -d --build
-```
-
-### 4. Access Services
-
-- **API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **Frontend Demo**: http://localhost:3000
-- **Health Check**: http://localhost:8000/health
-
-## 📖 Book Content Setup
-
-To populate the knowledge base with your book content:
-
-### 1. Prepare Content
-
-```bash
-# Create data directory
-mkdir -p data
-
-# Add your book PDF(s)
-cp /path/to/cryptocurrencies-decrypted.pdf data/
-
-# Optional: Add additional content files
-cp /path/to/supplementary-content.pdf data/
-```
-
-### 2. Process Content
-
-```bash
-# Run content processing
-docker-compose run --rm processor
-
-# Or run directly if you have the environment set up
-python -m app.scripts.process_book
-```
-
-### 3. Verify Content
-
-```bash
-# Check Pinecone index stats
-curl http://localhost:8000/api/v1/search?q="bitcoin"&tier=snippet
-
-# Should return relevant content with pricing
-```
-
-## 💰 X402 Payment Flow
-
-### How It Works
-
-1. **AI Agent Query**: Agent makes API request
-2. **Payment Required**: API returns HTTP 402 with payment details
-3. **USDC Payment**: Agent pays on Base L2 using X402 protocol
-4. **Content Delivery**: API verifies payment and returns knowledge
-5. **Settlement**: Payment settles in ~2 seconds
-
-### Example Integration
-
-```python
-import httpx
-import asyncio
-
-async def query_crypto_knowledge(query: str, tier: str = "explanation"):
-    """Query the Crypto Knowledge API with X402 payments"""
-    
-    url = "http://localhost:8000/api/v1/search"
-    params = {"q": query, "tier": tier}
-    
-    async with httpx.AsyncClient() as client:
-        # Initial request
-        response = await client.get(url, params=params)
-        
-        if response.status_code == 402:
-            # Payment required
-            payment_info = response.json()
-            
-            # Make USDC payment (using your preferred method)
-            tx_hash = await pay_with_usdc(payment_info["payment"])
-            
-            # Retry with payment proof
-            headers = {"X-Payment": tx_hash}
-            response = await client.get(url, params=params, headers=headers)
-        
-        return response.json()
-
-# Usage
-result = await query_crypto_knowledge("How does Bitcoin mining work?")
-print(result["results"][0]["content"])
-```
-
-### MCP Server Integration
-
-```bash
-# Install the MCP server for Claude Desktop
-npm install crypto-knowledge-mcp
-
-# Add to Claude Desktop config
-{
-  "mcpServers": {
-    "crypto-knowledge": {
-      "command": "npx",
-      "args": ["crypto-knowledge-mcp"],
-      "env": {
-        "API_URL": "http://localhost:8000",
-        "WALLET_PRIVATE_KEY": "your-private-key"
-      }
-    }
-  }
-}
-```
-
-## 🛠️ Development
-
-### Local Development Setup
-
-```bash
-# Install backend dependencies
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Install frontend dependencies
-cd ..
-npm install
-
-# Run services separately
-# Terminal 1: Backend
-uvicorn app.main:app --reload
-
-# Terminal 2: Frontend  
-npm run dev
-
-# Terminal 3: Database & Redis
-docker-compose up -d db redis
-```
-
-### Code Quality
-
-```bash
-# Setup linting (using tech-lead skill)
-./tech-lead/scripts/setup-linting.sh
-
-# Run code analysis
-./tech-lead/scripts/analyze-codebase.py ./backend
-
-# Format code
-cd backend
-black . && isort .
-
-cd ..
-npm run format
-```
-
-### Testing
-
-```bash
-# Backend tests
-cd backend
-pytest
-
-# Frontend tests
-cd ..
-npm test
-
-# Integration tests
-npm run test:e2e
-```
-
-## 📊 API Reference
-
-### Pricing Tiers
-
-| Tier | Price | Description | Max Tokens | Use Case |
-|------|--------|-------------|------------|----------|
-| `snippet` | $0.001 | Quick answer, 1-2 sentences | 100 | Fact checking |
-| `explanation` | $0.005 | Detailed explanation, 1-2 paragraphs | 300 | Concept understanding |
-| `analysis` | $0.01 | Multi-concept analysis | 800 | Complex analysis |
-| `chapter_summary` | $0.02 | Full chapter insights | 1500 | Deep research |
+**Payment details:**
+- Network: Base (chain ID 8453)
+- Asset: USDC — `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- Recipient: `0x28e6b3e3e32308787f50e6d99e2b98745b381946`
+- Facilitator: `https://facilitator.coinbase.com`
 
 ### Endpoints
 
-#### Search Knowledge
-```http
-GET /api/v1/search?q={query}&tier={tier}&topics={topics}&complexity={level}
-POST /api/v1/search
+#### `GET /api/v1/pricing`
+Returns pricing tiers as JSON. Free, no payment required.
+
+#### `GET /api/v1/search`
+```
+?q=<query>&tier=<tier>&max_results=<1-10>&topics=<csv>&complexity=<beginner|intermediate|advanced>
 ```
 
-#### Specific Concepts
-```http
-GET /api/v1/concepts/{concept}?tier={tier}
+#### `POST /api/v1/search`
+```json
+{
+  "query": "What is a 51% attack?",
+  "tier": "explanation",
+  "max_results": 3,
+  "topics": ["bitcoin", "security"],
+  "complexity": "intermediate"
+}
 ```
 
-#### Compare Concepts
-```http
-GET /api/v1/compare?concept1={c1}&concept2={c2}&tier={tier}
-```
+#### `GET /api/v1/concepts/{concept}?tier=<tier>`
+Get an explanation of a specific crypto concept.
 
-#### Topic Timeline
-```http
-GET /api/v1/timeline/{topic}?tier={tier}
-```
+#### `GET /api/v1/compare?concept1=<c1>&concept2=<c2>&tier=<tier>`
+Compare two concepts. Requires `analysis` or `chapter_summary` tier.
 
-#### Pricing Info (Free)
-```http
-GET /api/v1/pricing
-```
+#### `GET /api/v1/timeline/{topic}?tier=<tier>`
+Historical timeline for a crypto topic.
 
-### Response Format
+### Response format
 
 ```json
 {
-  "query": "How does Bitcoin mining work?",
-  "tier": "explanation", 
+  "query": "What is Bitcoin?",
+  "tier": "snippet",
   "results": [
     {
-      "content": "Bitcoin mining is the process...",
-      "relevance_score": 0.95,
-      "chapter": "Part 3: Crypto Solutions",
-      "topics": ["bitcoin", "mining", "proof-of-work"],
+      "content": "Bitcoin can be best understood as distributed software...",
+      "relevance_score": 0.862,
+      "chapter": "Cryptocurrencies Decrypted by Oskar Hurme",
       "source": {
         "book": "Cryptocurrencies Decrypted",
         "author": "Oskar Hurme"
       }
     }
   ],
-  "cost_usd": 0.005,
-  "processing_time_ms": 245,
+  "total_results": 3,
+  "processing_time_ms": 1943,
+  "cost_usd": 0.001,
   "book_metadata": {
-    "title": "Cryptocurrencies Decrypted",
-    "amazon_url": "https://amazon.com/dp/B0DQXC7XVJ"
-  }
+    "title": "Cryptocurrencies Decrypted: Hope and Economic Freedom for a Broken Financial System",
+    "author": "Oskar Hurme",
+    "amazon_url": "https://www.amazon.com/dp/B0DQXC7XVJ"
+  },
+  "citations": ["..."]
 }
 ```
 
-## 🚀 Deployment
+### Python integration example
 
-### Production Deployment
+```python
+import httpx
+import base64
+import json
 
-#### Railway
-```bash
-# Install Railway CLI
-npm install -g @railway/cli
+async def query_crypto_knowledge(query: str, tier: str = "explanation"):
+    url = "http://localhost:8000/api/v1/search"
+    params = {"q": query, "tier": tier}
 
-# Deploy
-railway login
-railway up
+    async with httpx.AsyncClient() as client:
+        # Step 1: initial request
+        response = await client.get(url, params=params)
+
+        if response.status_code == 402:
+            # Step 2: decode payment requirement from PAYMENT-REQUIRED header
+            encoded = response.headers["PAYMENT-REQUIRED"]
+            payment_req = json.loads(base64.b64decode(encoded))
+            accepts = payment_req["accepts"][0]
+
+            # Step 3: pay USDC on Base — accepts["payTo"], accepts["amount"], accepts["asset"]
+            tx_hash = await pay_usdc_on_base(accepts)
+
+            # Step 4: construct PAYMENT-SIGNATURE header
+            payload = {
+                "payload": {"transaction": tx_hash},
+                "accepted": {"network": accepts["network"]}
+            }
+            signature = base64.b64encode(json.dumps(payload).encode()).decode()
+
+            # Step 5: retry with payment
+            response = await client.get(
+                url, params=params,
+                headers={"payment-signature": signature}
+            )
+
+        return response.json()
 ```
-
-#### Fly.io
-```bash
-# Install Fly CLI
-curl -L https://fly.io/install.sh | sh
-
-# Deploy
-flyctl launch
-flyctl deploy
-```
-
-#### Manual Server
-```bash
-# Build production images
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
-
-# Deploy to your server
-scp -r . user@your-server:/opt/crypto-knowledge-api
-ssh user@your-server "cd /opt/crypto-knowledge-api && ./scripts/deploy.sh production"
-```
-
-### Environment Configuration
-
-```bash
-# Production environment variables
-export DATABASE_URL="postgresql://user:pass@prod-db:5432/crypto_knowledge"
-export REDIS_URL="redis://prod-redis:6379/0"
-export ALLOWED_HOSTS="yourdomain.com,api.yourdomain.com"
-export CORS_ORIGINS="https://yourdomain.com"
-export DEBUG=false
-
-# Monitoring
-export SENTRY_DSN="your-sentry-dsn"
-```
-
-## 📈 Monitoring & Analytics
-
-### Health Monitoring
-```bash
-# Service health
-curl http://localhost:8000/health
-
-# Database status
-curl http://localhost:8000/health/db
-
-# Payment system status  
-curl http://localhost:8000/health/payments
-```
-
-### Analytics Dashboard
-
-The API includes built-in analytics for:
-- Query volume and revenue
-- Popular topics and concepts
-- User agent analysis (AI vs human)
-- Payment success rates
-- Response times
-
-Access at: `http://localhost:8000/admin/analytics`
-
-## 💡 Business Model
-
-### Revenue Streams
-
-1. **Direct API Revenue**: $0.001-0.02 per query
-2. **Book Sales Attribution**: Drive sales to Amazon
-3. **Enterprise Licensing**: Bulk usage agreements
-4. **Consulting Leads**: From API users needing custom solutions
-
-### Projected Economics
-
-**Conservative (Year 1):**
-- 10K queries/month × $0.005 avg = $50/month
-- Book attribution: +50 sales/month = +$500/month
-- **Total: ~$6.6K/year**
-
-**Moderate (Year 2):**  
-- 100K queries/month × $0.005 avg = $500/month
-- Book attribution: +200 sales/month = +$2K/month
-- Enterprise deals: $5K/quarter
-- **Total: ~$50K/year**
-
-**Optimistic (Year 3):**
-- 1M queries/month × $0.005 avg = $5K/month
-- Book + consulting pipeline: $20K/month
-- Platform partnerships: $50K/quarter
-- **Total: ~$500K/year**
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Make changes and test
-4. Run code quality checks: `./scripts/quality-check.sh`
-5. Commit: `git commit -m 'Add amazing feature'`
-6. Push: `git push origin feature/amazing-feature`
-7. Open Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
-
-## 📞 Support
-
-- **Documentation**: [API Docs](http://localhost:8000/docs)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/crypto-knowledge-api/issues)
-- **Email**: support@crypto-knowledge-api.com
-- **Twitter**: [@CryptoKnowledgeAPI](https://twitter.com/CryptoKnowledgeAPI)
-
-## 🎯 Roadmap
-
-### Phase 1 (Current) ✅
-- [x] Core API with X402 payments
-- [x] Semantic search with Pinecone
-- [x] Docker deployment
-- [x] Frontend demo
-
-### Phase 2 (Q2 2026) 🚧
-- [ ] MCP server for Claude Desktop
-- [ ] Advanced analytics dashboard
-- [ ] Multi-book support
-- [ ] Enterprise API keys
-
-### Phase 3 (Q3 2026) 📋
-- [ ] Mobile app integration
-- [ ] Advanced payment features (subscriptions, credits)
-- [ ] AI agent marketplace listing
-- [ ] Real-time collaboration features
-
-### Phase 4 (Q4 2026) 🔮
-- [ ] Multi-language support
-- [ ] Voice interface
-- [ ] Custom model fine-tuning
-- [ ] White-label platform
 
 ---
 
-**Built with ❤️ using the tech-lead skill and Bankr integration**
+## Stack
 
-*Transforming expert knowledge into the AI economy, one micropayment at a time.*
+**Backend:** FastAPI, asyncpg (PostgreSQL), Redis, OpenAI embeddings, Pinecone, web3.py
+**Frontend:** Next.js 14, TypeScript, Tailwind CSS
+**Infrastructure:** Docker Compose (local), Railway (production), Base L2
+
+---
+
+## Local development
+
+See [QUICKSTART.md](QUICKSTART.md) for setup instructions.
+
+**Services when running:**
+- API: http://localhost:8000
+- API docs (Swagger): http://localhost:8000/docs
+- Frontend: http://localhost:3000
+- Health: http://localhost:8000/health
+
+---
+
+## Deployment
+
+See [docs/deployment.md](docs/deployment.md) for Railway deployment.
+
+---
+
+## The book
+
+*Cryptocurrencies Decrypted: Hope and Economic Freedom for a Broken Financial System*
+by Oskar Hurme — available on [Amazon](https://www.amazon.com/dp/B0DQXC7XVJ).

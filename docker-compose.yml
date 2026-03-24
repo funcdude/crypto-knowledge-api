@@ -59,9 +59,8 @@ services:
 
   # Next.js Frontend (optional for admin/demo UI)
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: node:18-alpine
+    working_dir: /app
     ports:
       - "3000:3000"
     environment:
@@ -72,7 +71,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm run dev
+    command: sh -c "npm ci && npm run dev"
     networks:
       - crypto-knowledge
 

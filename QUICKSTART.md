@@ -1,144 +1,110 @@
-# 🚀 Quick Start - 5 Minutes to Running API
+# Quickstart — Local Development
 
-Get the Crypto Knowledge API running locally in 5 minutes.
+## Prerequisites
 
-## ⚡ Super Quick Setup
+- Docker Desktop
+- Git
 
-### 1. Prerequisites Check
+## Setup
+
 ```bash
-# Verify you have these installed:
-docker --version     # Need 20.0+
-docker-compose --version  # Need 1.25+
-```
-
-### 2. Get API Keys (2 minutes)
-
-#### OpenAI API Key
-1. Go to https://platform.openai.com/api-keys
-2. Click "Create new secret key"
-3. Copy the key (starts with `sk-`)
-
-#### Pinecone API Key  
-1. Go to https://app.pinecone.io/ (free tier available)
-2. Sign up/login
-3. Go to "API Keys" in left sidebar
-4. Copy API key and environment name
-
-### 3. Configure & Start (2 minutes)
-```bash
-# Clone and enter directory
 git clone https://github.com/funcdude/crypto-knowledge-api.git
 cd crypto-knowledge-api
 
-# Setup environment
 cp .env.example .env
-
-# Edit with your API keys (nano/vim/code/etc.)
-nano .env
+# Edit .env — add your OPENAI_API_KEY and PINECONE_API_KEY
 ```
 
-**Fill in these 3 required lines:**
+## Start the backend
+
 ```bash
-OPENAI_API_KEY=sk-your-key-here
-PINECONE_API_KEY=your-pinecone-key  
-PINECONE_ENVIRONMENT=us-west1-gcp-free
+docker compose up -d db redis api
 ```
 
-### 4. Deploy & Test (1 minute)
+Check it's running:
+
 ```bash
-# Start everything
-./scripts/deploy.sh local
-
-# Or run comprehensive tests
-./scripts/test-local.sh
+curl http://localhost:8000/health
 ```
 
-## ✅ Success Check
-
-Visit these URLs:
-- **API Docs**: http://localhost:8000/docs
-- **Frontend Demo**: http://localhost:3000  
-- **Health Check**: http://localhost:8000/health
-
-### Test Payment Flow
-```bash
-# Try a query (should return HTTP 402 Payment Required)
-curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=snippet"
-```
-
-Expected response:
+Expected:
 ```json
-{
-  "detail": {
-    "error": "Payment required",
-    "payment": {
-      "chainId": 8453,
-      "to": "0x28e6b3e3e32308787f50e6d99e2b98745b381946",
-      "amount": "1000",
-      "currency": "USDC"
-    },
-    "price_usd": 0.001
-  }
-}
+{"status": "healthy", "services": {"redis": "healthy", "database": "healthy"}}
 ```
 
-## 🎉 You're Done!
+## Start the frontend
 
-Your AI-Powered Crypto Knowledge API is now running with:
-- ✅ X402 payment system ready
-- ✅ Semantic search infrastructure  
-- ✅ USDC payment processing on Base L2
-- ✅ Interactive API documentation
-- ✅ Frontend demo interface
-
-## 🔄 Next Steps
-
-### Add Content (Optional)
 ```bash
-# Add your book PDFs
-mkdir -p data
-cp /path/to/your-book.pdf data/
-
-# Process content
-docker-compose run --rm processor
+docker compose up frontend
 ```
 
-### Test With Real Payments
-- Fund your Bankr wallet with USDC on Base
-- Use real transaction hashes in X-Payment header
-- Verify blockchain payment processing
-
-### Deploy to Production
+Or without Docker (faster for development):
 ```bash
-# Deploy to Railway, Fly.io, or your server
-./scripts/deploy.sh production
+npm run dev
 ```
 
-## 🆘 Troubleshooting
+Frontend: http://localhost:3000
 
-### Services Won't Start
+## Verify the payment flow
+
+Without a payment header — should return 402:
 ```bash
-# Check logs
-docker-compose logs -f
-
-# Restart clean
-docker-compose down -v
-docker-compose up -d --build
+curl -s -X POST http://localhost:8000/api/v1/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What is Bitcoin?", "tier": "snippet"}' \
+  -o /dev/null -w "%{http_code}"
 ```
+Expected: `402`
 
-### API Keys Issues
+The 402 response includes a `PAYMENT-REQUIRED` header containing the full x402 v2 payment specification (base64-encoded JSON).
+
+With a dev payment header (`SKIP_PAYMENT_VERIFY=true` in `.env`):
 ```bash
-# Check environment variables loaded
-docker-compose exec api env | grep OPENAI_API_KEY
-docker-compose exec api env | grep PINECONE_API_KEY
+PAYLOAD=$(echo '{"payload":{"transaction":"dev-test-001"},"accepted":{"network":"eip155:8453"}}' | base64)
+curl -s -X POST http://localhost:8000/api/v1/search \
+  -H "Content-Type: application/json" \
+  -H "payment-signature: $PAYLOAD" \
+  -d '{"query": "What is Bitcoin?", "tier": "snippet"}' | jq .query
+```
+Expected: `"What is Bitcoin?"`
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `OPENAI_API_KEY` | Yes | For generating query embeddings |
+| `PINECONE_API_KEY` | Yes | Vector DB with book content |
+| `PINECONE_INDEX_NAME` | Yes | Default: `crypto-knowledge` |
+| `PAYMENT_ADDRESS` | Yes | Your Base wallet to receive USDC |
+| `POSTGRES_PASSWORD` | Yes | Local DB password |
+| `REDIS_PASSWORD` | Yes | Local Redis password |
+| `SKIP_PAYMENT_VERIFY` | Dev only | Set `true` to bypass payment checks locally |
+| `DEBUG` | Dev only | Set `true` for verbose logging |
+
+`SKIP_PAYMENT_VERIFY=true` is blocked when `DEBUG=false` — it cannot be used in production.
+
+## Useful commands
+
+```bash
+# View API logs
+docker compose logs -f api
+
+# Restart just the API
+docker compose restart api
+
+# Stop everything
+docker compose down
+
+# Stop and wipe volumes (full reset)
+docker compose down -v
 ```
 
-### Need Help?
-- See **TESTING.md** for detailed testing guide
-- Check **README.md** for complete documentation
-- Review Docker logs: `docker-compose logs`
+## Troubleshooting
 
----
+**API won't start:** Check `docker compose logs api` — usually a missing env variable.
 
-**Total Time: 5 minutes** ⏱️  
-**Result: Production-ready AI knowledge API** 🚀
+**Pinecone errors:** Verify `PINECONE_API_KEY` and `PINECONE_INDEX_NAME` are correct in `.env`.
+
+**Frontend `next: not found`:** The frontend container installs dependencies on first start — wait ~60 seconds for `npm ci` to complete.
+
+**Database unhealthy:** Run `docker compose restart db` then `docker compose restart api`.
