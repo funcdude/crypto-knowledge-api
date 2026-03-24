@@ -80,7 +80,7 @@ def get_knowledge_service(request: Request) -> KnowledgeService:
     return request.app.state.knowledge_service
 
 def get_payment_cache(request: Request) -> PaymentCache:
-    return PaymentCache(request.app.state.redis_client)
+    return PaymentCache(request.app.state.db_pool)
 
 def get_analytics_service(request: Request) -> AnalyticsService:
     return AnalyticsService(request.app.state.redis_client)
@@ -94,7 +94,7 @@ async def require_payment(
     
     # Resolve dependencies manually since this is called directly, not as route dependency
     x402_manager = request.app.state.x402_manager
-    payment_cache = PaymentCache(request.app.state.redis_client)
+    payment_cache = PaymentCache(request.app.state.db_pool)
     
     # x402 v2 uses PAYMENT-SIGNATURE; also accept legacy x-payment header
     payment_header = (

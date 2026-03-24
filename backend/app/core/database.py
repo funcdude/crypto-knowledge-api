@@ -52,31 +52,36 @@ async def get_db_pool(database_url: str) -> DatabasePool:
 async def init_db(db_pool: DatabasePool) -> None:
     """
     Initialize database schema
-    
+
     Args:
         db_pool: Database connection pool
     """
-    
+
     try:
-        async with db_pool.acquire() as conn:
-            # Create tables if they don't exist
+        async with db_pool.pool.acquire() as conn:
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS knowledge_chunks (
                     id SERIAL PRIMARY KEY,
                     chapter VARCHAR(255),
                     section VARCHAR(255),
                     content TEXT,
-                    embedding VECTOR(1536),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-                
-                CREATE INDEX IF NOT EXISTS idx_knowledge_embedding 
-                ON knowledge_chunks USING ivfflat (embedding vector_cosine_ops);
+
+                CREATE TABLE IF NOT EXISTS used_payments (
+                    tx_hash TEXT PRIMARY KEY,
+                    from_address TEXT,
+                    to_address TEXT,
+                    amount TEXT,
+                    currency TEXT,
+                    chain_id INTEGER,
+                    used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
             """)
-            
+
             logger.info("Database schema initialized")
-            
+
     except Exception as e:
         logger.error("Failed to initialize database", error=str(e))
         raise

@@ -18,7 +18,7 @@ tiktoken==0.5.2
 
 # HTTP and validation
 httpx==0.25.2
-python-multipart==0.0.6
+python-multipart==0.0.12
 email-validator==2.1.0
 
 # Crypto and blockchain

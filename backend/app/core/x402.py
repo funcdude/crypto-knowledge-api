@@ -223,7 +223,28 @@ class X402Manager:
                 raise ValueError(f"Facilitator rejected payment: {resp.status_code} {resp.text}")
 
             result = resp.json()
-            logger.info("Facilitator settled payment", result=result)
+
+            # C-3: Validate facilitator response — check settled amount >= expected
+            settled_amount = (
+                result.get("amount")
+                or result.get("settledAmount")
+                or result.get("value")
+            )
+            if settled_amount is not None:
+                if int(settled_amount) < int(expected_amount):
+                    raise ValueError(
+                        f"Facilitator settled {settled_amount} but expected {expected_amount} — "
+                        "possible tier mismatch attack"
+                    )
+
+            # Validate recipient matches our payment address
+            settled_to = result.get("to") or result.get("recipient")
+            if settled_to and settled_to.lower() != self.payment_address.lower():
+                raise ValueError(
+                    f"Facilitator settled to wrong address: {settled_to}"
+                )
+
+            logger.info("Facilitator settled payment", tx=result.get("transaction") or result.get("txHash"))
 
             return PaymentProof(
                 transaction_hash=result.get("transaction", result.get("txHash", "facilitator-settled")),
@@ -265,7 +286,8 @@ class X402Manager:
 
             expected_amount_int = int(expected_amount)
             actual_amount_int = int(transfer_data["amount"])
-            if actual_amount_int < expected_amount_int * 0.95:
+            # H-2: strict equality — no underpayment tolerance
+            if actual_amount_int < expected_amount_int:
                 raise ValueError(
                     f"Insufficient payment: expected {expected_amount_int}, got {actual_amount_int}"
                 )
@@ -310,10 +332,10 @@ class X402Manager:
     async def validate_facilitator(self) -> bool:
         """Validate that facilitator is accessible"""
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(f"{self.facilitator_url}/health")
                 return response.status_code == 200
-        except:
+        except Exception:
             return False
     
     async def get_usdc_balance(self, address: str) -> int:
@@ -327,32 +349,43 @@ class X402Manager:
             return 0
 
 class PaymentCache:
-    """Cache for verified payments to prevent double-spending"""
-    
-    def __init__(self, redis_client):
-        self.redis = redis_client
-        self.prefix = "payment_cache:"
-        self.ttl = 86400  # 24 hours
-    
+    """Permanent deduplication store for verified payments — backed by PostgreSQL.
+
+    H-1: Redis TTL-based deduplication was vulnerable to replay after 24h.
+    On-chain transactions are permanent; deduplication records must be too.
+    """
+
+    def __init__(self, db_pool):
+        self.pool = db_pool.pool  # asyncpg pool
+
     async def is_payment_used(self, tx_hash: str) -> bool:
         """Check if payment has already been used"""
-        key = f"{self.prefix}{tx_hash}"
-        result = await self.redis.get(key)
-        return result is not None
-    
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT 1 FROM used_payments WHERE tx_hash = $1", tx_hash
+            )
+            return row is not None
+
     async def mark_payment_used(self, tx_hash: str, payment_proof: PaymentProof):
-        """Mark payment as used"""
-        key = f"{self.prefix}{tx_hash}"
-        data = {
-            "from_address": payment_proof.from_address,
-            "amount": payment_proof.amount,
-            "timestamp": payment_proof.timestamp.isoformat(),
-            "used_at": datetime.utcnow().isoformat()
-        }
-        await self.redis.setex(key, self.ttl, json.dumps(data))
-    
+        """Permanently record payment as used — ON CONFLICT DO NOTHING is idempotent"""
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                """INSERT INTO used_payments
+                       (tx_hash, from_address, to_address, amount, currency, chain_id)
+                   VALUES ($1, $2, $3, $4, $5, $6)
+                   ON CONFLICT (tx_hash) DO NOTHING""",
+                tx_hash,
+                payment_proof.from_address,
+                payment_proof.to_address,
+                payment_proof.amount,
+                payment_proof.currency,
+                payment_proof.chain_id,
+            )
+
     async def get_payment_info(self, tx_hash: str) -> Optional[Dict[str, Any]]:
-        """Get cached payment info"""
-        key = f"{self.prefix}{tx_hash}"
-        data = await self.redis.get(key)
-        return json.loads(data) if data else None
+        """Get payment record"""
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT * FROM used_payments WHERE tx_hash = $1", tx_hash
+            )
+            return dict(row) if row else None

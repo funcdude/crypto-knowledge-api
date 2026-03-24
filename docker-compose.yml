@@ -9,8 +9,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/crypto_knowledge
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/crypto_knowledge
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PINECONE_API_KEY=${PINECONE_API_KEY}
       - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME:-crypto-knowledge}
@@ -18,7 +18,7 @@ services:
       - X402_FACILITATOR_URL=${X402_FACILITATOR_URL:-https://facilitator.coinbase.com}
       - BANKR_API_KEY=${BANKR_API_KEY}
       - DEBUG=true
-      - SKIP_PAYMENT_VERIFY=true
+      - SKIP_PAYMENT_VERIFY=${SKIP_PAYMENT_VERIFY:-false}
     depends_on:
       - db
       - redis
@@ -37,9 +37,9 @@ services:
     environment:
       - POSTGRES_DB=crypto_knowledge
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
@@ -49,8 +49,9 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     networks:

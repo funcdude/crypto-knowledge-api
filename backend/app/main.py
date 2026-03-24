@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 import structlog
 
 from app.core.config import get_settings
-from app.core.database import get_db_pool
+from app.core.database import get_db_pool, init_db
 from app.core.cache import get_redis_client
 from app.core.x402 import X402Manager
 from app.api.routes import knowledge, health, x402
@@ -47,12 +47,20 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup/shutdown tasks"""
     logger.info("Starting up Crypto Knowledge API...")
-    
+
     # Initialize core services
     settings = get_settings()
+
+    # C-2: Block startup if payment verification is disabled in production
+    if settings.SKIP_PAYMENT_VERIFY and not settings.DEBUG:
+        raise RuntimeError(
+            "SKIP_PAYMENT_VERIFY=true is not allowed when DEBUG=false. "
+            "This setting must only be used in local development."
+        )
     
-    # Initialize database connection pool
+    # Initialize database connection pool and schema
     app.state.db_pool = await get_db_pool(settings.DATABASE_URL)
+    await init_db(app.state.db_pool)
     logger.info("Database connection pool initialized")
     
     # Initialize Redis cache
@@ -179,30 +187,28 @@ async def add_request_id(request: Request, call_next):
     response.headers["X-Request-ID"] = request_id
     return response
 
-# Rate limiting middleware (basic implementation)
+# Rate limiting middleware — H-3: atomic INCR + conditional EXPIRE avoids race condition
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
-    """Basic rate limiting - 100 requests per minute per IP"""
+    """Rate limiting - 100 requests per minute per IP"""
     client_ip = request.client.host
     redis_client = request.app.state.redis_client
-    
+
     key = f"rate_limit:{client_ip}"
-    current = await redis_client.get(key)
-    
-    if current is None:
-        await redis_client.setex(key, 60, 1)
-    else:
-        count = int(current)
-        if count >= 100:
-            return JSONResponse(
-                status_code=429,
-                content={
-                    "error": "Rate limit exceeded",
-                    "message": "Too many requests. Please try again in a minute."
-                }
-            )
-        await redis_client.incr(key)
-    
+    count = await redis_client.incr(key)
+    if count == 1:
+        # First request in this window — set the 60s expiry atomically after INCR
+        await redis_client.expire(key, 60)
+
+    if count > 100:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "error": "Rate limit exceeded",
+                "message": "Too many requests. Please try again in a minute."
+            }
+        )
+
     return await call_next(request)
 
 # Include API routes
