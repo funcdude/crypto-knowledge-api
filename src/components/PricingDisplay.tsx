@@ -9,9 +9,9 @@ export function PricingDisplay() {
         'Simple fact checking',
         'Basic concept definitions',
         'Quick yes/no answers',
-        '~100 tokens max'
+        '~100 tokens max',
       ],
-      popular: false
+      popular: false,
     },
     {
       name: 'Explanation',
@@ -22,9 +22,9 @@ export function PricingDisplay() {
         'Concept understanding',
         'How-to explanations',
         'Context and background',
-        '~300 tokens max'
+        '~300 tokens max',
       ],
-      popular: true
+      popular: true,
     },
     {
       name: 'Analysis',
@@ -35,9 +35,9 @@ export function PricingDisplay() {
         'Complex comparisons',
         'Pros and cons analysis',
         'Multiple perspectives',
-        '~800 tokens max'
+        '~800 tokens max',
       ],
-      popular: false
+      popular: false,
     },
     {
       name: 'Chapter Summary',
@@ -48,10 +48,10 @@ export function PricingDisplay() {
         'Deep research insights',
         'Historical context',
         'Complete frameworks',
-        '~1500 tokens max'
+        '~1500 tokens max',
       ],
-      popular: false
-    }
+      popular: false,
+    },
   ]
 
   return (
@@ -59,34 +59,36 @@ export function PricingDisplay() {
       {tiers.map((tier, index) => (
         <div
           key={index}
-          className={`relative bg-white rounded-xl shadow-sm border-2 p-6 ${
+          className={`relative rounded-xl p-6 transition-all ${
             tier.popular
-              ? 'border-primary-500 ring-2 ring-primary-200'
-              : 'border-gray-200 hover:border-gray-300'
+              ? 'bg-surface-container border-2 border-primary shadow-[0_0_30px_rgba(173,198,255,0.08)]'
+              : 'bg-surface-container-low border border-outline-variant/15 hover:bg-surface-container'
           }`}
         >
           {tier.popular && (
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <span className="bg-primary-500 text-white px-3 py-1 text-sm font-semibold rounded-full">
+              <span className="engine-gradient text-on-primary px-3 py-1 text-[10px] font-bold rounded-full tracking-widest uppercase font-mono">
                 Most Popular
               </span>
             </div>
           )}
 
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{tier.name}</h3>
-            <div className="mb-2">
-              <span className="text-3xl font-bold text-primary-600">{tier.price}</span>
-              <span className="text-gray-500"> USDC</span>
+          <div className="mb-6">
+            <h3 className="text-base font-bold text-on-surface mb-2 uppercase tracking-tight">{tier.name}</h3>
+            <div className="mb-2 flex items-baseline gap-1">
+              <span className={`text-2xl font-bold font-mono ${tier.popular ? 'text-primary' : 'text-on-surface'}`}>
+                {tier.price}
+              </span>
+              <span className="text-on-surface-variant text-sm">USDC</span>
             </div>
-            <p className="text-gray-600 text-sm">{tier.description}</p>
+            <p className="text-on-surface-variant text-xs leading-relaxed">{tier.description}</p>
           </div>
 
-          <ul className="space-y-3 mb-6">
+          <ul className="space-y-2 mb-6">
             {tier.features.map((feature, featureIndex) => (
-              <li key={featureIndex} className="flex items-start">
+              <li key={featureIndex} className="flex items-start gap-2">
                 <svg
-                  className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0"
+                  className={`h-4 w-4 mt-0.5 flex-shrink-0 ${tier.popular ? 'text-primary' : 'text-green-400'}`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -96,21 +98,21 @@ export function PricingDisplay() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-gray-600 text-sm">{feature}</span>
+                <span className="text-on-surface-variant text-xs leading-relaxed">{feature}</span>
               </li>
             ))}
           </ul>
 
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-3">
+          <div>
+            <div className="text-[10px] font-mono text-outline mb-3">
               Pay with USDC on Base L2<br />
               ~2 second settlement
             </div>
             <button
-              className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors ${
+              className={`w-full py-2 px-4 rounded-lg text-sm font-bold uppercase tracking-tight transition-all ${
                 tier.popular
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'engine-gradient text-on-primary hover:opacity-90 active:scale-95'
+                  : 'bg-surface-container-highest text-on-surface border border-outline-variant/20 hover:bg-surface-bright'
               }`}
             >
               Try {tier.name}

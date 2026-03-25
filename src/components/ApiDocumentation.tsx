@@ -1,4 +1,12 @@
+'use client'
+
+import { useState } from 'react'
+
+const TABS = ['Endpoints', 'Code Examples', 'X402 Flow', 'Pricing']
+
 export function ApiDocumentation() {
+  const [activeTab, setActiveTab] = useState('Endpoints')
+
   const codeExamples = [
     {
       title: 'cURL Example',
@@ -8,7 +16,7 @@ curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation"
 
 # Query with X402 payment
 curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation" \\
-  -H "X-Payment: 0x1234...transaction-hash"`
+  -H "X-Payment: 0x1234...transaction-hash"`,
     },
     {
       title: 'JavaScript/TypeScript',
@@ -35,7 +43,7 @@ curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation" \\
   }
   
   return await response.json()
-}`
+}`,
     },
     {
       title: 'Python',
@@ -64,7 +72,7 @@ async def query_crypto_knowledge(query: str, tier: str = "explanation"):
         return response.json()
 
 # Usage
-result = await query_crypto_knowledge("How does Bitcoin work?")`
+result = await query_crypto_knowledge("How does Bitcoin work?")`,
     },
     {
       title: 'MCP Server Integration',
@@ -80,8 +88,8 @@ result = await query_crypto_knowledge("How does Bitcoin work?")`
       }
     }
   }
-}`
-    }
+}`,
+    },
   ]
 
   const endpoints = [
@@ -89,120 +97,181 @@ result = await query_crypto_knowledge("How does Bitcoin work?")`
       method: 'GET',
       path: '/api/v1/search',
       description: 'Search crypto knowledge with semantic matching',
-      params: 'q, tier, topics, complexity, max_results'
+      params: 'q, tier, topics, complexity, max_results',
     },
     {
       method: 'POST',
       path: '/api/v1/search',
       description: 'Search with JSON payload for complex queries',
-      params: 'JSON body with query object'
+      params: 'JSON body with query object',
     },
     {
       method: 'GET',
       path: '/api/v1/concepts/{concept}',
       description: 'Get detailed explanation of specific concept',
-      params: 'concept (path), tier (query)'
+      params: 'concept (path), tier (query)',
     },
     {
       method: 'GET',
       path: '/api/v1/compare',
       description: 'Compare two crypto concepts side-by-side',
-      params: 'concept1, concept2, tier'
+      params: 'concept1, concept2, tier',
     },
     {
       method: 'GET',
       path: '/api/v1/timeline/{topic}',
       description: 'Get historical timeline for crypto topic',
-      params: 'topic (path), tier (query)'
+      params: 'topic (path), tier (query)',
     },
     {
       method: 'GET',
       path: '/api/v1/pricing',
       description: 'Get current pricing tiers (free endpoint)',
-      params: 'None'
-    }
+      params: 'None',
+    },
   ]
 
   return (
-    <div className="space-y-8">
-      {/* API Endpoints */}
-      <div className="bg-white rounded-xl p-6 shadow-sm">
-        <h3 className="text-2xl font-bold mb-6">API Endpoints</h3>
-        <div className="space-y-4">
-          {endpoints.map((endpoint, index) => (
-            <div key={index} className="border-l-4 border-primary-500 pl-4">
-              <div className="flex items-center gap-3 mb-2">
-                <span className={`px-2 py-1 text-xs font-semibold rounded ${
-                  endpoint.method === 'GET' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {endpoint.method}
-                </span>
-                <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                  {endpoint.path}
-                </code>
-              </div>
-              <p className="text-gray-600 text-sm mb-1">{endpoint.description}</p>
-              <p className="text-xs text-gray-500">Parameters: {endpoint.params}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="bg-surface-container-low border border-outline-variant/10 rounded-xl overflow-hidden">
 
-      {/* Code Examples */}
-      <div className="space-y-6">
-        <h3 className="text-2xl font-bold">Integration Examples</h3>
-        
-        {codeExamples.map((example, index) => (
-          <div key={index} className="bg-gray-900 rounded-xl overflow-hidden">
-            <div className="bg-gray-800 px-4 py-2 flex items-center justify-between">
-              <h4 className="text-white font-semibold">{example.title}</h4>
-              <span className="text-xs text-gray-400">{example.language}</span>
-            </div>
-            <pre className="p-4 text-sm text-gray-100 overflow-x-auto">
-              <code>{example.code}</code>
-            </pre>
-          </div>
+      {/* Tab Bar */}
+      <div className="flex border-b border-outline-variant/10 bg-surface-container-lowest overflow-x-auto no-scrollbar">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-8 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
+              activeTab === tab
+                ? 'border-b-2 border-primary text-primary font-bold'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            {tab}
+          </button>
         ))}
       </div>
 
-      {/* Payment Flow */}
-      <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl p-6">
-        <h3 className="text-2xl font-bold mb-4">X402 Payment Flow</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="bg-white rounded-lg p-4 shadow-sm mb-3">
-              <div className="text-2xl mb-2">🤖</div>
-              <div className="text-sm font-semibold">AI Agent Query</div>
-            </div>
-            <p className="text-xs text-gray-600">Agent makes API request</p>
+      <div className="p-6 lg:p-10">
+
+        {/* Endpoints Tab */}
+        {activeTab === 'Endpoints' && (
+          <div className="space-y-3">
+            {endpoints.map((endpoint, index) => (
+              <div
+                key={index}
+                className="group bg-surface-container-lowest/50 border border-outline-variant/10 hover:border-primary/30 rounded-lg p-4 transition-all"
+              >
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className={`px-2 py-1 rounded text-[10px] font-bold font-mono ${
+                    endpoint.method === 'GET'
+                      ? 'bg-green-500/10 text-green-400'
+                      : 'bg-blue-500/10 text-blue-400'
+                  }`}>
+                    {endpoint.method}
+                  </span>
+                  <code className="font-mono text-sm text-on-surface">{endpoint.path}</code>
+                  <span className="text-sm text-on-surface-variant ml-auto hidden md:block">{endpoint.description}</span>
+                </div>
+                <p className="text-xs font-mono text-outline mt-2 ml-12">params: {endpoint.params}</p>
+              </div>
+            ))}
           </div>
-          
-          <div className="text-center">
-            <div className="bg-white rounded-lg p-4 shadow-sm mb-3">
-              <div className="text-2xl mb-2">💳</div>
-              <div className="text-sm font-semibold">HTTP 402</div>
-            </div>
-            <p className="text-xs text-gray-600">Payment required response</p>
+        )}
+
+        {/* Code Examples Tab */}
+        {activeTab === 'Code Examples' && (
+          <div className="space-y-6">
+            {codeExamples.map((example, index) => (
+              <div key={index} className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/15">
+                <div className="bg-surface-container px-4 py-3 flex items-center justify-between border-b border-outline-variant/10">
+                  <h4 className="text-on-surface font-semibold text-sm">{example.title}</h4>
+                  <span className="text-xs font-mono text-on-surface-variant px-2 py-0.5 bg-surface-container-highest rounded">{example.language}</span>
+                </div>
+                <pre className="p-5 text-sm font-mono text-secondary leading-relaxed overflow-x-auto">
+                  <code>{example.code}</code>
+                </pre>
+              </div>
+            ))}
           </div>
-          
-          <div className="text-center">
-            <div className="bg-white rounded-lg p-4 shadow-sm mb-3">
-              <div className="text-2xl mb-2">⚡</div>
-              <div className="text-sm font-semibold">USDC Payment</div>
+        )}
+
+        {/* X402 Flow Tab */}
+        {activeTab === 'X402 Flow' && (
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { icon: '🤖', title: 'AI Agent Query', desc: 'Agent makes API request' },
+                { icon: '💳', title: 'HTTP 402', desc: 'Payment required response' },
+                { icon: '⚡', title: 'USDC Payment', desc: 'Pay on Base L2 (~2s)' },
+                { icon: '🧠', title: 'Knowledge', desc: 'Expert insights delivered' },
+              ].map((step, i) => (
+                <div key={i} className="text-center">
+                  <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/15 mb-3 terminal-glow">
+                    <div className="text-2xl mb-2">{step.icon}</div>
+                    <div className="text-sm font-bold text-on-surface">{step.title}</div>
+                  </div>
+                  <p className="text-xs font-mono text-on-surface-variant">{step.desc}</p>
+                  {i < 3 && (
+                    <div className="hidden md:block absolute -right-2 top-1/2 text-on-surface-variant/30 text-lg font-mono">→</div>
+                  )}
+                </div>
+              ))}
             </div>
-            <p className="text-xs text-gray-600">Pay on Base L2 (~2s)</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="bg-white rounded-lg p-4 shadow-sm mb-3">
-              <div className="text-2xl mb-2">🧠</div>
-              <div className="text-sm font-semibold">Knowledge</div>
+            <div className="mt-8 bg-primary/5 border border-primary/20 rounded-lg p-6">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-primary mb-4">Protocol Configuration</h3>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm max-w-md">
+                <span className="text-on-surface-variant">Payment Header:</span>
+                <span className="font-mono text-primary">X-Payment</span>
+                <span className="text-on-surface-variant">Network:</span>
+                <span className="font-mono text-on-surface">Base (Chain ID 8453)</span>
+                <span className="text-on-surface-variant">Asset:</span>
+                <span className="font-mono text-on-surface">USDC (ERC-20)</span>
+                <span className="text-on-surface-variant">Min Cost:</span>
+                <span className="font-mono text-on-surface">0.001 USDC</span>
+              </div>
             </div>
-            <p className="text-xs text-gray-600">Expert insights delivered</p>
           </div>
-        </div>
+        )}
+
+        {/* Pricing Tab */}
+        {activeTab === 'Pricing' && (
+          <div className="space-y-6">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 overflow-hidden">
+              <div className="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center">
+                <h3 className="text-sm font-bold text-on-surface uppercase tracking-tight">Machine-Readable Pricing</h3>
+                <span className="font-mono text-xs text-on-surface-variant px-2 py-1 bg-surface-container rounded">ENDPOINT: /api/v1/pricing</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-outline-variant/10">
+                      <th className="text-left px-6 py-3 text-[10px] font-mono uppercase text-outline">Tier</th>
+                      <th className="text-left px-6 py-3 text-[10px] font-mono uppercase text-outline">Param</th>
+                      <th className="text-left px-6 py-3 text-[10px] font-mono uppercase text-outline">Cost (USDC)</th>
+                      <th className="text-left px-6 py-3 text-[10px] font-mono uppercase text-outline">Response</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { tier: 'Snippet', param: 'snippet', cost: '0.001', response: 'Short text' },
+                      { tier: 'Explanation', param: 'explanation', cost: '0.005', response: 'Detailed text' },
+                      { tier: 'Analysis', param: 'analysis', cost: '0.01', response: 'Comprehensive text' },
+                      { tier: 'Chapter Summary', param: 'chapter_summary', cost: '0.02', response: 'Full insights' },
+                    ].map((row, i) => (
+                      <tr key={i} className={`border-b border-outline-variant/5 ${i % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface-container-low'}`}>
+                        <td className="px-6 py-4 font-bold text-primary text-xs">{row.tier}</td>
+                        <td className="px-6 py-4 font-mono text-xs text-on-surface">{row.param}</td>
+                        <td className="px-6 py-4 font-mono text-xs text-on-surface">{row.cost}</td>
+                        <td className="px-6 py-4 text-xs text-on-surface-variant">{row.response}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )

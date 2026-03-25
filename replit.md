@@ -47,6 +47,16 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 | `PAYMENT_ADDRESS` | Env var | Ethereum wallet for X402 |
 | `SECRET_KEY` | Env var | App secret key |
 
+## Frontend Design System
+The frontend uses the "Synthetic Architect" dark design system — Technical Brutalism aesthetic:
+- **Theme**: Dark mode always-on (`dark` class on `<html>`); base surface `#121315`
+- **Colors**: Full Tailwind token set (`surface`, `surface-container-*`, `primary` #ADC6FF, `primary-container` #4D8EFF, `outline-variant` #424754, etc.)
+- **Typography**: Inter (UI headings/body) via `--font-inter` CSS var; Space Mono (data/code/prices) via `--font-mono` CSS var; loaded via `next/font/google`
+- **Gradient CTA**: `engine-gradient` utility class (135° from #ADC6FF to #4D8EFF) defined in globals.css
+- **No hard borders**: Tonal layering + ghost borders at low opacity (`border-outline-variant/15`)
+- **ApiDocumentation**: Client component with 4 tabs (Endpoints, Code Examples, X402 Flow, Pricing)
+- **SearchDemo**: Client component with 4-tile tier selector, dark input, two-column layout (form + results)
+
 ## Replit Migration Notes
 - **Next.js downgraded 14→13.5.8**: SWC native binary in v14 caused Bus errors; v13.5.8 binary is compatible.
 - **Port 5000**: Required for Replit webview proxy.
