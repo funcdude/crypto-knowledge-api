@@ -29,6 +29,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://localhost:5000'),
   title: 'Crypto Knowledge API',
   description: 'Expert crypto knowledge from "Cryptocurrencies Decrypted" by Oskar Hurme, served via X402 micropayments on Base L2.',
+  icons: { icon: '/favicon.svg' },
   keywords: ['crypto', 'bitcoin', 'blockchain', 'X402', 'AI agents', 'micropayments'],
   authors: [{ name: 'Oskar Hurme' }],
   creator: 'Oskar Hurme',
