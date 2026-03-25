@@ -1,7 +1,7 @@
 modules = ["python-3.12", "nodejs-20", "bash"]
 [agent]
 expertMode = true
-integrations = ["python_database:1.0.0"]
+integrations = ["python_database:1.0.0", "github:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
