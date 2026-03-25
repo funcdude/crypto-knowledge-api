@@ -51,7 +51,7 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 The frontend uses the "Synthetic Architect" dark design system — Technical Brutalism aesthetic:
 - **Theme**: Dark mode always-on (`dark` class on `<html>`); base surface `#121315`
 - **Colors**: Full Tailwind token set (`surface`, `surface-container-*`, `primary` #ADC6FF, `primary-container` #4D8EFF, `outline-variant` #424754, etc.)
-- **Typography**: Inter (UI headings/body) via `--font-inter` CSS var; Space Mono (data/code/prices) via `--font-mono` CSS var; loaded via `next/font/google`
+- **Typography**: Inter (UI headings/body) via `--font-inter` CSS var; Geist Mono (data/code/prices) via `--font-mono` CSS var; Inter loaded via `next/font/google`, Geist Mono loaded via `next/font/local` from `public/fonts/` (Geist Mono is not available in Google Fonts; woff2 files sourced from the `geist` npm package)
 - **Gradient CTA**: `engine-gradient` utility class (135° from #ADC6FF to #4D8EFF) defined in globals.css
 - **No hard borders**: Tonal layering + ghost borders at low opacity (`border-outline-variant/15`)
 - **ApiDocumentation**: Client component with 4 tabs (Endpoints, Code Examples, X402 Flow, Pricing)

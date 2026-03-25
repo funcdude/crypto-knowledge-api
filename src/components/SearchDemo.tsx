@@ -89,13 +89,12 @@ export function SearchDemo() {
             <label className="block text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">
               Search Crypto Knowledge
             </label>
-            <input
-              type="text"
+            <textarea
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g. How does Bitcoin mining work?"
-              className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 transition-all"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              rows={3}
+              className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 transition-all resize-none"
             />
           </div>
 
@@ -114,7 +113,7 @@ export function SearchDemo() {
             disabled={loading || !query.trim()}
             className="w-full engine-gradient py-3 px-6 rounded-lg font-black text-on-primary uppercase text-sm tracking-tight hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading ? 'Searching...' : 'Search Knowledge'}
+            {loading ? 'Searching...' : 'Pay & Search'}
           </button>
         </div>
       </div>
