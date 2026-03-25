@@ -1,7 +1,21 @@
-# Crypto Knowledge API
+# Crypto Knowledge API — MVP v0.1
+
+## Version
+**MVP v0.1** — March 25, 2026
 
 ## Overview
-Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto knowledge from "Cryptocurrencies Decrypted" via X402 micropayments on Base L2.
+Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto knowledge from "Cryptocurrencies Decrypted" by Oskar Hurme via X402 micropayments on Base L2.
+
+## MVP v0.1 Features
+- Semantic search across 975 vectorized book passages (OpenAI embeddings + Pinecone)
+- 4-tier pay-per-query pricing (snippet $0.001, explanation $0.005, analysis $0.01, chapter summary $0.02)
+- X402 micropayment protocol on Base L2 (USDC) with dev-mode bypass
+- "Synthetic Architect" dark design system (Technical Brutalism aesthetic)
+- Interactive search demo with live results from the knowledge base
+- API documentation with tabbed UI (endpoints, code examples, X402 flow, pricing)
+- Dedicated docs and pricing pages
+- Redis caching layer for API responses
+- PostgreSQL for analytics and session tracking
 
 ## Stack
 - **Frontend**: Next.js 13.5.8 (App Router), TypeScript, Tailwind CSS — port 5000
