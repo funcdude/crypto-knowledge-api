@@ -205,14 +205,14 @@ result = await query_crypto_knowledge("How does Bitcoin work?")`,
                 { icon: '⚡', title: 'USDC Payment', desc: 'Pay on Base L2 (~2s)' },
                 { icon: '🧠', title: 'Knowledge', desc: 'Expert insights delivered' },
               ].map((step, i) => (
-                <div key={i} className="text-center">
+                <div key={i} className="relative text-center">
                   <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/15 mb-3 terminal-glow">
                     <div className="text-2xl mb-2">{step.icon}</div>
                     <div className="text-sm font-bold text-on-surface">{step.title}</div>
                   </div>
                   <p className="text-xs font-mono text-on-surface-variant">{step.desc}</p>
                   {i < 3 && (
-                    <div className="hidden md:block absolute -right-2 top-1/2 text-on-surface-variant/30 text-lg font-mono">→</div>
+                    <div className="hidden md:block absolute -right-2 top-1/2 -translate-y-1/2 text-on-surface-variant/30 text-lg font-mono">→</div>
                   )}
                 </div>
               ))}
