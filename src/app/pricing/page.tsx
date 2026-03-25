@@ -49,9 +49,8 @@ export default function PricingPage() {
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Pricing Tiers</h1>
-            <p className="text-on-surface-variant text-sm font-mono">PAY_PER_QUERY — NO_SUBSCRIPTION — NO_API_KEYS</p>
-            <p className="text-on-surface-variant mt-3 max-w-2xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-4">Pricing Tiers</h1>
+            <p className="text-xl text-on-surface-variant max-w-2xl">
               Pay only for what you use with USDC micropayments on Base L2. No subscriptions, no API keys.
             </p>
           </div>

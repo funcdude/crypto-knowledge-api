@@ -46,9 +46,8 @@ export default function DocsPage() {
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">API Documentation</h1>
-            <p className="text-on-surface-variant text-sm font-mono">CRYPTO_KNOWLEDGE_API — X402_PROTOCOL — BASE_L2</p>
-            <p className="text-on-surface-variant mt-3 max-w-2xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-4">API Documentation</h1>
+            <p className="text-xl text-on-surface-variant max-w-2xl">
               Integrate expert crypto knowledge into your AI agents and applications using X402 micropayments on Base L2.
             </p>
           </div>

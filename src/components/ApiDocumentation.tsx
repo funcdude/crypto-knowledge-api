@@ -217,19 +217,6 @@ result = await query_crypto_knowledge("How does Bitcoin work?")`,
                 </div>
               ))}
             </div>
-            <div className="mt-8 bg-primary/5 border border-primary/20 rounded-lg p-6">
-              <h3 className="text-xs font-mono uppercase tracking-widest text-primary mb-4">Protocol Configuration</h3>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm max-w-md">
-                <span className="text-on-surface-variant">Payment Header:</span>
-                <span className="font-mono text-primary">X-Payment</span>
-                <span className="text-on-surface-variant">Network:</span>
-                <span className="font-mono text-on-surface">Base (Chain ID 8453)</span>
-                <span className="text-on-surface-variant">Asset:</span>
-                <span className="font-mono text-on-surface">USDC (ERC-20)</span>
-                <span className="text-on-surface-variant">Min Cost:</span>
-                <span className="font-mono text-on-surface">0.001 USDC</span>
-              </div>
-            </div>
           </div>
         )}
 

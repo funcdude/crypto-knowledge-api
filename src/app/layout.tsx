@@ -1,17 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter, Space_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-})
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
@@ -54,11 +48,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark scroll-smooth">
-      <body className={cn(
-        inter.variable,
-        spaceMono.variable,
-        'min-h-screen bg-surface font-sans antialiased'
-      )}>
+      <body
+        className={cn(
+          inter.variable,
+          'min-h-screen bg-surface font-sans antialiased'
+        )}
+      >
         <div className="relative flex min-h-screen flex-col">
           <main className="flex-1">{children}</main>
         </div>

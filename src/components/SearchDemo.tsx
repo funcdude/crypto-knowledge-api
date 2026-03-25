@@ -114,7 +114,7 @@ export function SearchDemo() {
             disabled={loading || !query.trim()}
             className="w-full engine-gradient py-3 px-6 rounded-lg font-black text-on-primary uppercase text-sm tracking-tight hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading ? 'Searching...' : `Pay ${TIER_COSTS[tier]} and Search`}
+            {loading ? 'Searching...' : 'Search Knowledge'}
           </button>
         </div>
       </div>
@@ -127,7 +127,7 @@ export function SearchDemo() {
           {!result && !error && !loading && (
             <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
               <div className="text-on-surface-variant/30 text-4xl font-mono">_</div>
-              <p className="text-on-surface-variant/50 text-sm font-mono">AWAITING_QUERY</p>
+              <p className="text-on-surface-variant/50 text-sm">Results will appear here</p>
               <p className="text-on-surface-variant/30 text-xs">Enter a question and run a search</p>
             </div>
           )}
@@ -136,7 +136,7 @@ export function SearchDemo() {
           {loading && (
             <div className="flex-1 flex flex-col items-center justify-center gap-3">
               <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-              <p className="text-on-surface-variant text-xs font-mono">QUERYING_KNOWLEDGE_BASE...</p>
+              <p className="text-on-surface-variant text-xs">Searching...</p>
             </div>
           )}
 

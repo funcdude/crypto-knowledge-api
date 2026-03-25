@@ -1,8 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-mono: 'Geist Mono', monospace;
+  }
+
   html {
     scroll-behavior: smooth;
   }
