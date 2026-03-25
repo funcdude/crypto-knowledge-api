@@ -1,11 +1,28 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { cn } from '@/lib/utils'
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+})
+
+const geistMono = localFont({
+  src: [
+    {
+      path: '../../public/fonts/GeistMono-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/GeistMono-Medium.woff2',
+      weight: '500 600',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
@@ -51,6 +68,7 @@ export default function RootLayout({
       <body
         className={cn(
           inter.variable,
+          geistMono.variable,
           'min-h-screen bg-surface font-sans antialiased'
         )}
       >

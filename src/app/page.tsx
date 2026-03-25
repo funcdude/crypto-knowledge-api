@@ -60,12 +60,12 @@ export default function HomePage() {
                 Pay per query with USDC micropayments on Base L2.
               </p>
               <div className="flex flex-wrap gap-4">
-                <a
-                  href="#demo"
+                <Link
+                  href="/docs"
                   className="px-6 py-3 engine-gradient text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all"
                 >
                   API Docs
-                </a>
+                </Link>
                 <Link
                   href="https://www.amazon.com/Cryptocurrencies-Decrypted-Economic-Freedom-Financial-ebook/dp/B0DQXC7XVJ"
                   target="_blank"
