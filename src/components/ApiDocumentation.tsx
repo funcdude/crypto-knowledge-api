@@ -12,47 +12,51 @@ export function ApiDocumentation() {
       title: 'cURL Example',
       language: 'bash',
       code: `# Query without payment (returns HTTP 402)
-curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation"
+curl "https://sagemolly.com/api/v1/search?q=bitcoin+consensus&tier=explanation"
 
 # Query with X402 payment
-curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation" \\
-  -H "X-Payment: 0x1234...transaction-hash"`,
+curl "https://sagemolly.com/api/v1/search?q=bitcoin+consensus&tier=explanation" \\
+  -H "X-Payment: 0x7a2d...f3e1"
+
+# Get pricing tiers (free, no payment needed)
+curl "https://sagemolly.com/api/v1/pricing"`,
     },
     {
       title: 'JavaScript/TypeScript',
       language: 'javascript',
-      code: `const queryKnowledge = async (query, tier = 'explanation') => {
-  const url = 'http://localhost:8000/api/v1/search'
+      code: `const querySageMolly = async (query, tier = 'explanation') => {
+  const url = 'https://sagemolly.com/api/v1/search'
   const params = new URLSearchParams({ q: query, tier })
   
   const response = await fetch(\`\${url}?\${params}\`)
   
   if (response.status === 402) {
     const paymentInfo = await response.json()
-    console.log('Payment required:', paymentInfo)
+    // paymentInfo.price_usd = "0.01"
+    // paymentInfo.payment.address = "0x..."
     
     // Make USDC payment on Base L2
     const txHash = await payWithUSDC(paymentInfo.payment)
     
     // Retry with payment proof
-    const retryResponse = await fetch(\`\${url}?\${params}\`, {
+    return await fetch(\`\${url}?\${params}\`, {
       headers: { 'X-Payment': txHash }
-    })
-    
-    return await retryResponse.json()
+    }).then(r => r.json())
   }
   
   return await response.json()
-}`,
+}
+
+// Tiers: explanation ($0.01) | summary ($0.02) | analysis ($0.03)
+const result = await querySageMolly("How does DeFi work?", "summary")`,
     },
     {
       title: 'Python',
       language: 'python',
       code: `import httpx
-import asyncio
 
 async def query_sage_molly(query: str, tier: str = "explanation"):
-    url = "http://localhost:8000/api/v1/search"
+    url = "https://sagemolly.com/api/v1/search"
     params = {"q": query, "tier": tier}
     
     async with httpx.AsyncClient() as client:
@@ -60,31 +64,31 @@ async def query_sage_molly(query: str, tier: str = "explanation"):
         
         if response.status_code == 402:
             payment_info = response.json()
-            print("Payment required:", payment_info)
+            # payment_info["price_usd"] = "0.01"
             
-            # Make USDC payment
+            # Make USDC payment on Base L2
             tx_hash = await pay_with_usdc(payment_info["payment"])
             
-            # Retry with payment
+            # Retry with payment proof
             headers = {"X-Payment": tx_hash}
             response = await client.get(url, params=params, headers=headers)
         
         return response.json()
 
-# Usage
-result = await query_sage_molly("How does Bitcoin work?")`,
+# Tiers: explanation ($0.01) | summary ($0.02) | analysis ($0.03)
+result = await query_sage_molly("What is fractional reserve?", "analysis")`,
     },
     {
       title: 'MCP Server Integration',
       language: 'json',
       code: `{
   "mcpServers": {
-    "crypto-knowledge": {
+    "sage-molly": {
       "command": "npx",
-      "args": ["crypto-knowledge-mcp"],
+      "args": ["sage-molly-mcp"],
       "env": {
-        "API_URL": "http://localhost:8000",
-        "WALLET_PRIVATE_KEY": "your-private-key"
+        "API_URL": "https://sagemolly.com",
+        "WALLET_PRIVATE_KEY": "your-base-l2-private-key"
       }
     }
   }
