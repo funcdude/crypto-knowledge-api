@@ -75,3 +75,8 @@ CORS_ORIGINS = "*"
 PAYMENT_ADDRESS = "0x28e6b3e3e32308787f50e6d99e2b98745b381946"
 X402_FACILITATOR_URL = "https://facilitator.coinbase.com"
 SECRET_KEY = "dev-secret-key-change-in-production"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "redis-server --daemonize yes --logfile /tmp/redis.log && cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 & cd /home/runner/workspace && npm run start"]
+build = ["bash", "-c", "npm run build"]

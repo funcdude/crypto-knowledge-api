@@ -105,8 +105,11 @@ The frontend uses the "Synthetic Architect" dark design system — Technical Bru
 - **`min_score=0.0`**: Pinecone cosine scores top out at ~0.85; default in `embedding_service.py` is `0.0`.
 - **Next.js proxy rewrites**: `next.config.js` rewrites `/api/v1/*`, `/health/*`, and `/x402/*` to `http://localhost:8000`. `NEXT_PUBLIC_API_URL` is `""` (empty) so all frontend API calls are relative, proxied server-side.
 
-## Production Checklist
-- Set `SKIP_PAYMENT_VERIFY=false` and `DEBUG=false`
-- Tighten `CORS_ORIGINS` to specific allowed origins
-- Configure `ALLOWED_HOSTS`
+## Deployment
+- **Target**: Autoscale
+- **Build**: `npm run build` (Next.js production build)
+- **Run**: Redis daemon → uvicorn (port 8000) → `npm run start` (port 5000)
+- **Proxy**: Next.js rewrites `/api/v1/*`, `/health/*`, `/x402/*` to FastAPI on port 8000
+- `SKIP_PAYMENT_VERIFY` defaults to `false` (production-safe); `DEBUG` defaults to `false`
+- Rate limiter gracefully degrades if Redis is unavailable
 - Pinecone index (`crypto-knowledge`) is pre-populated with 975 vectors from the book
