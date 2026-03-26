@@ -105,7 +105,7 @@ export default function HomePage() {
               <div className="text-3xl mb-4">🧠</div>
               <h3 className="text-lg font-semibold mb-2">Expert Knowledge</h3>
               <p className="text-on-surface-variant text-sm">
-                Content from fintech practitioner and fractional CPO, not AI-generated responses
+                Content from fractional Product Lead Oskar Hurme, not AI-generated responses
               </p>
             </div>
 
