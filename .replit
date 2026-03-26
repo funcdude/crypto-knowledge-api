@@ -79,4 +79,4 @@ SECRET_KEY = "dev-secret-key-change-in-production"
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "redis-server --daemonize yes --logfile /tmp/redis.log && cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 & sleep 2 && npm run start"]
-build = ["bash", "-c", "npm run build"]
+build = ["bash", "-c", "rm -rf node_modules/.cache && npm install && npm run build"]
