@@ -181,8 +181,8 @@ export function SearchDemo() {
                   <div key={index} className="bg-surface-container-lowest rounded border border-outline-variant/15 p-3">
                     <p className="text-on-surface text-sm leading-relaxed mb-1">{item.content}</p>
                     {item.source && (
-                      <p className="text-[10px] text-on-surface-variant/60 truncate">
-                        {item.source?.book} — {item.chapter}
+                      <p className="text-[10px] text-on-surface-variant/60">
+                        {item.source?.author}
                       </p>
                     )}
                   </div>

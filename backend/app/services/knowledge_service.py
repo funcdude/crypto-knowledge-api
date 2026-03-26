@@ -207,19 +207,11 @@ class KnowledgeService:
                 content = "\n".join(fixed_lines)
 
             if tier == "snippet":
-                # Extract key sentence(s)
                 sentences = content.split(". ")
-                content = ". ".join(sentences[:2]) + ("." if len(sentences) > 2 else "")
+                content = ". ".join(sentences[:4]) + ("." if len(sentences) > 4 else "")
             elif tier == "explanation":
-                # First 1-2 paragraphs
                 paragraphs = content.split("\n\n")
-                content = "\n\n".join(paragraphs[:2])
-            # For analysis and chapter_summary, use full content
-            
-            words = content.split()
-            word_limit = max(50, max_tokens // max(1, len(results)))
-            if len(words) > word_limit:
-                content = " ".join(words[:word_limit]) + "..."
+                content = "\n\n".join(paragraphs[:3])
             
             formatted_result = {
                 "content": content,
