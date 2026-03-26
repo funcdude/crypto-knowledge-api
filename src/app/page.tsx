@@ -56,7 +56,7 @@ export default function HomePage() {
                 <span className="block text-primary">for AI Agents</span>
               </h2>
               <p className="text-on-surface-variant text-lg lg:text-xl max-w-xl leading-relaxed mb-8">
-                Transform &ldquo;Cryptocurrencies Decrypted&rdquo; into an AI-accessible knowledge service.
+                We've transformed the book &ldquo;Cryptocurrencies Decrypted&rdquo; into an AI-accessible knowledge service.
                 Pay per query with USDC micropayments on Base L2.
               </p>
               <div className="flex flex-wrap gap-4">
