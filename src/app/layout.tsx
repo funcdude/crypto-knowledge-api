@@ -27,23 +27,23 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://localhost:5000'),
-  title: 'Crypto Knowledge API',
-  description: 'Expert crypto knowledge from "Cryptocurrencies Decrypted" by Oskar Hurme, served via X402 micropayments on Base L2.',
+  title: 'Sage Molly — Crypto Education for Humans & AI Agents',
+  description: 'Expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme. Learn about Bitcoin, Ethereum, DeFi, and more — powered by X402 micropayments on Base L2.',
   icons: { icon: '/favicon.svg' },
-  keywords: ['crypto', 'bitcoin', 'blockchain', 'X402', 'AI agents', 'micropayments'],
+  keywords: ['crypto', 'bitcoin', 'blockchain', 'X402', 'AI agents', 'micropayments', 'crypto education', 'sage molly'],
   authors: [{ name: 'Oskar Hurme' }],
   creator: 'Oskar Hurme',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    siteName: 'Crypto Knowledge API',
-    title: 'Crypto Knowledge API — Expert Knowledge for AI Agents',
-    description: 'Expert crypto knowledge from "Cryptocurrencies Decrypted" via X402 micropayments on Base L2.',
+    siteName: 'Sage Molly',
+    title: 'Sage Molly — Crypto Education for Humans & AI Agents',
+    description: 'Expert crypto education from "Cryptocurrencies Decrypted" via X402 micropayments on Base L2.',
   },
   twitter: {
     card: 'summary',
-    title: 'Crypto Knowledge API',
-    description: 'Expert crypto knowledge via X402 micropayments on Base L2.',
+    title: 'Sage Molly',
+    description: 'Expert crypto education via X402 micropayments on Base L2.',
     creator: '@oskarhurme',
   },
   robots: {

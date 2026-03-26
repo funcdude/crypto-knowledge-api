@@ -1,21 +1,25 @@
-# Crypto Knowledge API — MVP v0.1
+# Sage Molly — MVP v0.2
 
 ## Version
-**MVP v0.1** — March 25, 2026
+**MVP v0.2** — March 26, 2026
 
 ## Overview
-Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto knowledge from "Cryptocurrencies Decrypted" by Oskar Hurme via X402 micropayments on Base L2.
+Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme. Branded as "Sage Molly" — a crypto education agent for humans and AI agents, powered by X402 micropayments on Base L2.
 
-## MVP v0.1 Features
+## MVP v0.2 Features
+- **Sage Molly rebrand**: Full rebrand from "Crypto Knowledge API" to "Sage Molly"
+- **Freemium gate**: 3 free questions with email signup, then X402 pay-per-query
+- **Book CTA**: Soft prompt to buy the book after 2nd response
+- **Disclaimer**: "Sage Molly educates, not advises" shown on hero and footer
 - Semantic search across 975 vectorized book passages (OpenAI embeddings + Pinecone)
-- 4-tier pay-per-query pricing (snippet $0.001, explanation $0.005, analysis $0.01, chapter summary $0.02)
+- 3-tier pay-per-query pricing (Explanation $0.01, Summary $0.02, Analysis $0.03)
 - X402 micropayment protocol on Base L2 (USDC) with dev-mode bypass
 - "Synthetic Architect" dark design system (Technical Brutalism aesthetic)
 - Interactive search demo with live results from the knowledge base
 - API documentation with tabbed UI (endpoints, code examples, X402 flow, pricing)
 - Dedicated docs and pricing pages
 - Redis caching layer for API responses
-- PostgreSQL for analytics and session tracking
+- PostgreSQL for analytics, session tracking, and email/free-query tracking
 
 ## Stack
 - **Frontend**: Next.js 13.5.8 (App Router), TypeScript, Tailwind CSS — port 5000
@@ -36,8 +40,8 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 │   └── app/
 │       ├── main.py          # FastAPI app entrypoint
 │       ├── core/            # Config, database, cache, x402 manager
-│       ├── api/routes/      # health, knowledge, x402 routes
-│       └── services/        # knowledge_service, embedding_service, analytics_service
+│       ├── api/routes/      # health, knowledge, x402, freemium routes
+│       └── services/        # knowledge_service, embedding_service, analytics_service, text_utils
 ├── next.config.js
 ├── package.json
 └── requirements.txt
@@ -65,11 +69,25 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 The frontend uses the "Synthetic Architect" dark design system — Technical Brutalism aesthetic:
 - **Theme**: Dark mode always-on (`dark` class on `<html>`); base surface `#121315`
 - **Colors**: Full Tailwind token set (`surface`, `surface-container-*`, `primary` #ADC6FF, `primary-container` #4D8EFF, `outline-variant` #424754, etc.)
-- **Typography**: Inter (UI headings/body) via `--font-inter` CSS var; Geist Mono (data/code/prices) via `--font-mono` CSS var; Inter loaded via `next/font/google`, Geist Mono loaded via `next/font/local` from `public/fonts/` (Geist Mono is not available in Google Fonts; woff2 files sourced from the `geist` npm package)
+- **Typography**: Inter (UI headings/body) via `--font-inter` CSS var; Geist Mono (data/code/prices) via `--font-mono` CSS var; Inter loaded via `next/font/google`, Geist Mono loaded via `next/font/local` from `public/fonts/`
 - **Gradient CTA**: `engine-gradient` utility class (135° from #ADC6FF to #4D8EFF) defined in globals.css
 - **No hard borders**: Tonal layering + ghost borders at low opacity (`border-outline-variant/15`)
-- **ApiDocumentation**: Client component with 4 tabs (Endpoints, Code Examples, X402 Flow, Pricing)
-- **SearchDemo**: Client component with 4-tile tier selector, dark input, two-column layout (form + results)
+- **SearchDemo**: Client component with email gate, free query counter, tier selector (after limit), and book CTA
+
+## Freemium System
+- **3 free questions** with email signup (stored in `free_queries` PostgreSQL table)
+- Email stored in localStorage on frontend, query count tracked server-side
+- After 3 free queries, tier selector appears and X402 pay-per-query kicks in
+- Book CTA ("Want to go deeper?") shown after 2nd response and onward
+- Backend endpoint: `POST /api/v1/free-search` (email + query)
+- Status check: `GET /api/v1/free-status?email=...`
+
+## API Pricing Tiers
+| Tier | Price | Description |
+|---|---|---|
+| explanation | $0.01 | Concise explanation, 1-2 paragraphs |
+| summary | $0.02 | Detailed summary with full context |
+| analysis | $0.03 | Comprehensive multi-concept analysis |
 
 ## Replit Migration Notes
 - **Next.js downgraded 14→13.5.8**: SWC native binary in v14 caused Bus errors; v13.5.8 binary is compatible.
@@ -77,17 +95,9 @@ The frontend uses the "Synthetic Architect" dark design system — Technical Bru
 - **`output: 'standalone'` removed**: Docker-only setting.
 - **Redis installed via Nix**: `redis-server` is started by the backend workflow before uvicorn.
 - **PostgreSQL**: Provided by Replit's managed database integration (`DATABASE_URL` auto-set).
-- **`SKIP_PAYMENT_VERIFY=true` + `DEBUG=true`**: Both must be set for the payment bypass to activate — `require_payment()` returns `True` immediately when both are set, skipping X402 validation in dev.
-- **`min_score=0.0`**: Pinecone cosine scores for this index top out at ~0.85; the old threshold of 0.5 blocked all results. Default in `embedding_service.py` is now `0.0`.
-- **Next.js proxy rewrites**: `next.config.js` rewrites `/api/v1/*`, `/health/*`, and `/x402/*` to `http://localhost:8000`. `NEXT_PUBLIC_API_URL` is set to `""` (empty) so all frontend API calls are relative URLs, proxied server-side — no direct browser access to port 8000 needed.
-
-## API Pricing Tiers
-| Tier | Price | Description |
-|---|---|---|
-| snippet | $0.001 | Quick answer, 1-2 sentences |
-| explanation | $0.005 | Detailed explanation |
-| analysis | $0.01 | Comprehensive analysis |
-| chapter_summary | $0.02 | Full chapter insights |
+- **`SKIP_PAYMENT_VERIFY=true` + `DEBUG=true`**: Both must be set for the payment bypass to activate.
+- **`min_score=0.0`**: Pinecone cosine scores top out at ~0.85; default in `embedding_service.py` is `0.0`.
+- **Next.js proxy rewrites**: `next.config.js` rewrites `/api/v1/*`, `/health/*`, and `/x402/*` to `http://localhost:8000`. `NEXT_PUBLIC_API_URL` is `""` (empty) so all frontend API calls are relative, proxied server-side.
 
 ## Production Checklist
 - Set `SKIP_PAYMENT_VERIFY=false` and `DEBUG=false`

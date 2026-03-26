@@ -2,8 +2,8 @@ import { ApiDocumentation } from '@/components/ApiDocumentation'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'API Documentation - Crypto Knowledge API',
-  description: 'Full API reference for the Crypto Knowledge API with X402 micropayments',
+  title: 'API Documentation - Sage Molly',
+  description: 'Full API reference for Sage Molly with X402 micropayments',
 }
 
 export default function DocsPage() {
@@ -13,7 +13,7 @@ export default function DocsPage() {
       {/* Nav */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#121315] border-b border-outline-variant/10">
         <Link href="/" className="text-xl font-black tracking-tighter text-on-surface uppercase hover:text-primary transition-colors">
-          Crypto Knowledge API
+          Sage Molly
         </Link>
         <div className="hidden md:flex bg-surface-container-lowest p-1 rounded-full border border-outline-variant/20">
           <Link
@@ -48,7 +48,7 @@ export default function DocsPage() {
           <div className="mb-10">
             <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-4">API Documentation</h1>
             <p className="text-xl text-on-surface-variant max-w-2xl">
-              Integrate expert crypto knowledge into your AI agents and applications using X402 micropayments on Base L2.
+              Integrate Sage Molly&apos;s expert crypto knowledge into your AI agents and applications using X402 micropayments on Base L2.
             </p>
           </div>
           <ApiDocumentation />

@@ -1,6 +1,6 @@
 """
-Crypto Knowledge API - X402 Enabled
-Transform "Cryptocurrencies Decrypted" into an AI-accessible knowledge service
+Sage Molly - X402 Enabled
+Expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme
 """
 
 import os
@@ -18,7 +18,7 @@ from app.core.config import get_settings
 from app.core.database import get_db_pool, init_db
 from app.core.cache import get_redis_client
 from app.core.x402 import X402Manager
-from app.api.routes import knowledge, health, x402
+from app.api.routes import knowledge, health, x402, freemium
 from app.api.routes.knowledge import _PaymentRequired
 from app.services.knowledge_service import KnowledgeService
 from app.services.embedding_service import EmbeddingService
@@ -46,7 +46,7 @@ logger = structlog.get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup/shutdown tasks"""
-    logger.info("Starting up Crypto Knowledge API...")
+    logger.info("Starting up Sage Molly...")
 
     # Initialize core services
     settings = get_settings()
@@ -99,12 +99,12 @@ async def lifespan(app: FastAPI):
         logger.warning("Knowledge service initialization failed (will retry on use)", error=str(e))
         app.state.knowledge_service = None
     
-    logger.info("🚀 Crypto Knowledge API startup complete!")
+    logger.info("🚀 Sage Molly startup complete!")
     
     yield
     
     # Shutdown tasks
-    logger.info("Shutting down Crypto Knowledge API...")
+    logger.info("Shutting down Sage Molly...")
     
     if hasattr(app.state, 'db_pool'):
         await app.state.db_pool.close()
@@ -114,12 +114,12 @@ async def lifespan(app: FastAPI):
         await app.state.redis_client.close()
         logger.info("Redis connections closed")
     
-    logger.info("✅ Crypto Knowledge API shutdown complete")
+    logger.info("✅ Sage Molly shutdown complete")
 
 # Create FastAPI application
 app = FastAPI(
-    title="Crypto Knowledge API",
-    description="AI-accessible crypto expertise from 'Cryptocurrencies Decrypted' with X402 micropayments",
+    title="Sage Molly",
+    description="Expert crypto education from 'Cryptocurrencies Decrypted' with X402 micropayments",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
@@ -215,12 +215,13 @@ async def rate_limit_middleware(request: Request, call_next):
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(x402.router, prefix="/x402", tags=["x402"])
 app.include_router(knowledge.router, prefix="/api/v1", tags=["knowledge"])
+app.include_router(freemium.router, prefix="/api/v1", tags=["freemium"])
 
 # Root endpoint
 @app.get("/")
 async def root():
     return {
-        "message": "Crypto Knowledge API - First AI-accessible expert crypto knowledge",
+        "message": "Sage Molly - Expert crypto education for humans and AI agents",
         "version": "1.0.0",
         "book": "Cryptocurrencies Decrypted: Hope and Economic Freedom for a Broken Financial System",
         "author": "Oskar Hurme",
@@ -242,34 +243,28 @@ def custom_openapi():
     from fastapi.openapi.utils import get_openapi
     
     openapi_schema = get_openapi(
-        title="Crypto Knowledge API",
+        title="Sage Molly",
         version="1.0.0",
         description="""
-        # The First AI-Monetized Book
+        # Sage Molly — Expert Crypto Education
         
-        Transform expert crypto knowledge into an AI-accessible service using X402 micropayments.
+        Expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme, powered by X402 micropayments.
         
         ## Features
         - 🧠 **Expert Knowledge**: Content from "Cryptocurrencies Decrypted" by Oskar Hurme
-        - ⚡ **X402 Payments**: Micropayments on Base L2 (USDC)
-        - 🤖 **AI-Native**: Designed for AI agents and applications
-        - 🔍 **Semantic Search**: Vector-based knowledge retrieval
-        - ⚡ **Real-Time**: 2-second payment settlement
+        - 🙋 **3 Free Questions**: Start learning with just your email
+        - ⚡ **X402 Payments**: Pay-per-query with USDC on Base L2
+        - 🤖 **For Everyone**: Normies and devs alike
         
-        ## Pricing Tiers
-        - **Snippet** ($0.001): Quick answer, 1-2 sentences
-        - **Explanation** ($0.005): Detailed explanation, 1-2 paragraphs  
-        - **Analysis** ($0.01): Multi-concept analysis, comprehensive
-        - **Chapter Summary** ($0.02): Full chapter insights and context
+        ## Pricing
+        - **Explanation** ($0.01): Concise explanation, 1-2 paragraphs
+        - **Summary** ($0.02): Detailed summary with full context
+        - **Analysis** ($0.03): Comprehensive multi-concept analysis
         
-        ## X402 Integration
-        All knowledge endpoints support X402 micropayments. AI agents can:
-        1. Query any endpoint
-        2. Receive HTTP 402 Payment Required
-        3. Pay with USDC on Base
-        4. Access expert crypto knowledge
+        ## Free Tier
+        3 free questions with email signup. After that, X402 micropayments kick in.
         
-        No API keys. No subscriptions. Just pay-per-use knowledge.
+        Sage Molly educates, not advises. Nothing here is financial advice.
         """,
         routes=app.routes,
     )

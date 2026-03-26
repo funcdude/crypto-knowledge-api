@@ -78,6 +78,17 @@ async def init_db(db_pool: DatabasePool) -> None:
                     chain_id INTEGER,
                     used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
+
+                CREATE TABLE IF NOT EXISTS free_queries (
+                    id SERIAL PRIMARY KEY,
+                    email TEXT NOT NULL,
+                    query_count INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_free_queries_email
+                    ON free_queries (LOWER(email));
             """)
 
             logger.info("Database schema initialized")

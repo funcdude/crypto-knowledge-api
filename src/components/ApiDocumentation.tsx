@@ -51,7 +51,7 @@ curl "http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation" \\
       code: `import httpx
 import asyncio
 
-async def query_crypto_knowledge(query: str, tier: str = "explanation"):
+async def query_sage_molly(query: str, tier: str = "explanation"):
     url = "http://localhost:8000/api/v1/search"
     params = {"q": query, "tier": tier}
     
@@ -72,7 +72,7 @@ async def query_crypto_knowledge(query: str, tier: str = "explanation"):
         return response.json()
 
 # Usage
-result = await query_crypto_knowledge("How does Bitcoin work?")`,
+result = await query_sage_molly("How does Bitcoin work?")`,
     },
     {
       title: 'MCP Server Integration',

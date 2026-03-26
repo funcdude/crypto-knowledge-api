@@ -50,7 +50,7 @@ async def health_check(request: Request):
             "database": db_status
         },
         "version": "1.0.0",
-        "name": "Crypto Knowledge API"
+        "name": "Sage Molly"
     }
 
 
@@ -111,5 +111,5 @@ async def liveness_check(request: Request):
     return {
         "alive": True,
         "timestamp": datetime.utcnow().isoformat(),
-        "service": "Crypto Knowledge API"
+        "service": "Sage Molly"
     }

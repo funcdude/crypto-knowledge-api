@@ -101,7 +101,7 @@ class AnalyticsService:
             total_queries = await self.redis.get(count_key) or 0
             
             # Get tier breakdown
-            tiers = ["snippet", "explanation", "analysis", "chapter_summary"]
+            tiers = ["explanation", "summary", "analysis"]
             tier_counts = {}
             
             for tier in tiers:
@@ -144,10 +144,9 @@ class AnalyticsService:
             daily_stats = []
             total_queries = 0
             total_by_tier = {
-                "snippet": 0,
                 "explanation": 0,
+                "summary": 0,
                 "analysis": 0,
-                "chapter_summary": 0
             }
             
             current_date = datetime.strptime(start_date, "%Y-%m-%d")

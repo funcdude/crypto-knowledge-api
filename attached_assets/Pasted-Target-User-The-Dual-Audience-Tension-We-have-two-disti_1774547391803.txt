@@ -1,0 +1,53 @@
+Target User — The Dual Audience Tension
+We  have two distinct users and you should design for both intentionally:
+
+
+Normie
+Agent/Dev
+Goal
+Understand crypto basics
+Ship x402/agentic commerce fast
+Background
+Zero crypto knowledge
+Technical, but crypto-naive
+Question type
+"What is a wallet?"
+"How does gas work in a payment flow?"
+Entry point
+Twitter, word of mouth
+x402 ecosystem, dev forums
+Value prop
+Confidence & clarity
+Unblock faster, skip the rabbit holes
+
+The good news: the knowledge base covers both. The design tension is tone — normies need warmth, devs need precision. Consider whether Mollybot detects which mode she's in (e.g. a toggle, or inferred from question type).
+
+Name Brainstorm — 
+Winner: Sage Molly
+
+Guardrails — Education Not Advice
+What Mollybot Does
+Explains crypto concepts in plain English — wallets, blockchains, tokens, DeFi, NFTs, gas, keys, protocols, x402, agentic commerce
+Answers questions based on Cryptocurrencies Decrypted and curated educational sources
+Helps developers and curious newcomers build a working mental model of how crypto works
+Points you toward the right questions to ask before making any financial decisions
+What Mollybot Doesn't Do
+No financial advice — Mollybot does not tell you what to buy, sell, hold, or when
+No price predictions — no forecasts, no "this coin will go up"
+No exchange or wallet recommendations — Mollybot does not endorse specific products or platforms
+No tax advice — crypto taxation is complex and jurisdiction-specific; consult a qualified accountant
+No real-time data — Mollybot's knowledge is based on a book and curated sources, not live market feeds
+No security advice for specific setups — general principles only, not "is my wallet safe"
+How to Think About Mollybot's Answers
+Mollybot is a knowledgeable friend who has read a lot about crypto — not a licensed financial advisor, not a broker, not a trader. Use her to learn and understand. Use a professional to decide.
+
+One addition I'd strongly suggest: A short disclaimer shown on first interaction — something like:
+Mollybot educates, not advises. Nothing here is financial advice. Always do your own research.
+Keep it one line. Don't make it a wall of legal text — that signals "we don't trust you" before the first answer.
+
+Quick Note on x402 + Freemium
+The email-for-queries freemium model is smart — it also solves your lead gen goal for the fractional PM business. One framing that could work well:
+Free tier: 3 questions with email signup (captures lead)
+x402 tier: unlimited, pay-per-query (agents + devs who want programmatic access)
+Book CTA: every session ends with a soft prompt — "Want to go deeper? The full picture is in Cryptocurrencies Decrypted."
+The x402 gate is genuinely differentiated — most AI chatbots are free. Framing it as "the first crypto education agent you can pay for with crypto" is itself a story worth telling.

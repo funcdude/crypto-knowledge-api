@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings with environment variable support"""
     
     # API Configuration
-    APP_NAME: str = "Crypto Knowledge API"
+    APP_NAME: str = "Sage Molly"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     
@@ -39,10 +39,11 @@ class Settings(BaseSettings):
     BANKR_API_URL: str = "https://api.bankr.bot"
     
     # Pricing Configuration (in USDC, 6 decimals)
-    PRICE_SNIPPET: float = 0.001      # $0.001
-    PRICE_EXPLANATION: float = 0.005  # $0.005  
-    PRICE_ANALYSIS: float = 0.01      # $0.01
-    PRICE_CHAPTER_SUMMARY: float = 0.02  # $0.02
+    PRICE_EXPLANATION: float = 0.01    # $0.01
+    PRICE_SUMMARY: float = 0.02       # $0.02
+    PRICE_ANALYSIS: float = 0.03      # $0.03
+    
+    FREE_QUERY_LIMIT: int = 3
     
     # Content Configuration
     BOOK_TITLE: str = "Cryptocurrencies Decrypted: Hope and Economic Freedom for a Broken Financial System"
