@@ -91,3 +91,22 @@ def should_fix(content: str) -> bool:
     if not content:
         return False
     return content.count(" ") / max(len(content), 1) < 0.06
+
+
+def clean_punctuation(text: str) -> str:
+    """
+    Fix common punctuation spacing issues from PDF extraction.
+    Always safe to run — only adds missing spaces, never removes existing ones.
+    """
+    if not text:
+        return text
+    text = re.sub(r',([A-Za-z])', r', \1', text)
+    text = re.sub(r'\.([A-Z])', r'. \1', text)
+    text = re.sub(r'\)([A-Za-z])', r') \1', text)
+    text = re.sub(r'([a-z])(\d{4})', r'\1 \2', text)
+    text = re.sub(r'(\d)([A-Z])', r'\1 \2', text)
+    text = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
+    text = re.sub(r':([A-Za-z])', r': \1', text)
+    text = re.sub(r';([A-Za-z])', r'; \1', text)
+    text = re.sub(r'by(\d)', r'by \1', text)
+    return text
