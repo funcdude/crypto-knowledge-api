@@ -98,6 +98,30 @@ export function SearchDemo() {
             />
           </div>
 
+          {/* Example Prompts */}
+          <div>
+            <span className="block text-[10px] font-mono uppercase tracking-widest text-on-surface-variant/50 mb-2">Try these</span>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                'What is money?',
+                'Genghis Khan and money?',
+                'What is fractional reserve?',
+                'What are NFTs?',
+                'Ethereum vs Bitcoin?',
+                'What is Solana?',
+                'What is the future of money?',
+              ].map((example) => (
+                <button
+                  key={example}
+                  onClick={() => setQuery(example)}
+                  className="px-2.5 py-1 text-xs text-on-surface-variant bg-surface-container-lowest border border-outline-variant/20 rounded-full hover:border-primary/40 hover:text-primary transition-colors"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Cost Preview */}
           <div className="flex justify-between items-center px-1">
             <span className="text-xs text-on-surface-variant">
