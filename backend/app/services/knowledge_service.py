@@ -216,10 +216,10 @@ class KnowledgeService:
                 content = "\n\n".join(paragraphs[:2])
             # For analysis and chapter_summary, use full content
             
-            # Truncate if too long
             words = content.split()
-            if len(words) > max_tokens // len(results):
-                content = " ".join(words[:max_tokens // len(results)]) + "..."
+            word_limit = max(50, max_tokens // max(1, len(results)))
+            if len(words) > word_limit:
+                content = " ".join(words[:word_limit]) + "..."
             
             formatted_result = {
                 "content": content,
