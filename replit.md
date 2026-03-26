@@ -76,11 +76,17 @@ The frontend uses the "Synthetic Architect" dark design system — Technical Bru
 
 ## Freemium System
 - **3 free questions** with email signup (stored in `free_queries` PostgreSQL table)
-- Email stored in localStorage on frontend, query count tracked server-side
+- Email validated via Pydantic `EmailStr`; query count tracked server-side with atomic UPDATE (race-condition safe)
+- Frontend reconciles with server on mount via `GET /free-status` (falls back to localStorage)
 - After 3 free queries, tier selector appears and X402 pay-per-query kicks in
 - Book CTA ("Want to go deeper?") shown after 2nd response and onward
 - Backend endpoint: `POST /api/v1/free-search` (email + query)
 - Status check: `GET /api/v1/free-status?email=...`
+
+## API Documentation (For AI Agents)
+- Tabbed UI: Endpoints, Code Examples, X402 Flow, Pricing
+- Code examples: cURL, JavaScript/TypeScript, Python (all use `https://sagemolly.com`)
+- 6 endpoints documented: search (GET/POST), concepts, compare, timeline, pricing
 
 ## API Pricing Tiers
 | Tier | Price | Description |
