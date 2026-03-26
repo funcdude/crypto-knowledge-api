@@ -79,4 +79,4 @@ SECRET_KEY = "dev-secret-key-change-in-production"
 [deployment]
 deploymentTarget = "vm"
 run = ["bash", "start.sh"]
-build = ["bash", "-c", "npm install && npm run build"]
+build = ["echo", "build handled by start.sh"]
