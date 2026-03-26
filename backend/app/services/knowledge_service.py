@@ -207,12 +207,9 @@ class KnowledgeService:
 
             content = clean_punctuation(content)
 
-            if tier == "snippet":
+            if tier == "explanation":
                 sentences = content.split(". ")
-                content = ". ".join(sentences[:4]) + ("." if len(sentences) > 4 else "")
-            elif tier == "explanation":
-                paragraphs = content.split("\n\n")
-                content = "\n\n".join(paragraphs[:3])
+                content = ". ".join(sentences[:3]) + ("." if len(sentences) > 3 else "")
             
             formatted_result = {
                 "content": content,
@@ -229,11 +226,6 @@ class KnowledgeService:
             }
             
             formatted_results.append(formatted_result)
-            total_tokens += len(content.split())
-            
-            # Stop if we've reached token limit
-            if total_tokens >= max_tokens:
-                break
         
         return formatted_results
     

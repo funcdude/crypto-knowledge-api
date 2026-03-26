@@ -92,29 +92,23 @@ class Settings(BaseSettings):
 
 # Pricing tiers with descriptions
 PRICING_TIERS = {
-    "snippet": {
-        "price": 0.001,
-        "description": "Quick answer, 1-2 sentences",
-        "max_tokens": 100,
-        "use_case": "Simple fact checking"
-    },
     "explanation": {
-        "price": 0.005, 
-        "description": "Detailed explanation, 1-2 paragraphs",
-        "max_tokens": 300,
+        "price": 0.01,
+        "description": "Concise explanation, 1-2 paragraphs",
+        "max_tokens": 200,
         "use_case": "Concept understanding"
     },
-    "analysis": {
-        "price": 0.01,
-        "description": "Multi-concept analysis, comprehensive",
-        "max_tokens": 800,
-        "use_case": "Complex analysis and comparison"
-    },
-    "chapter_summary": {
+    "summary": {
         "price": 0.02,
-        "description": "Full chapter insights and context", 
-        "max_tokens": 1500,
-        "use_case": "Deep dive into specific topics"
+        "description": "Detailed summary with full context",
+        "max_tokens": 500,
+        "use_case": "In-depth topic overview"
+    },
+    "analysis": {
+        "price": 0.03,
+        "description": "Comprehensive multi-concept analysis",
+        "max_tokens": 1200,
+        "use_case": "Complex analysis and comparison"
     }
 }
 

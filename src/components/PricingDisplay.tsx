@@ -1,61 +1,45 @@
 export function PricingDisplay() {
   const tiers = [
     {
-      name: 'Snippet',
-      price: '$0.001',
-      priceNum: 0.001,
-      description: 'Quick answer, 1-2 sentences',
+      name: 'Explanation',
+      price: '$0.01',
+      priceNum: 0.01,
+      description: 'Concise explanation, 1-2 paragraphs',
       features: [
-        'Simple fact checking',
-        'Basic concept definitions',
-        'Quick yes/no answers',
-        '~100 tokens max',
+        'Concept definitions',
+        'How-to explanations',
+        'Quick context and background',
       ],
       popular: false,
     },
     {
-      name: 'Explanation',
-      price: '$0.005',
-      priceNum: 0.005,
-      description: 'Detailed explanation, 1-2 paragraphs',
+      name: 'Summary',
+      price: '$0.02',
+      priceNum: 0.02,
+      description: 'Detailed summary with full context',
       features: [
-        'Concept understanding',
-        'How-to explanations',
-        'Context and background',
-        '~300 tokens max',
+        'In-depth topic overview',
+        'Historical context',
+        'Multiple perspectives',
       ],
       popular: true,
     },
     {
       name: 'Analysis',
-      price: '$0.01',
-      priceNum: 0.01,
-      description: 'Multi-concept analysis, comprehensive',
+      price: '$0.03',
+      priceNum: 0.03,
+      description: 'Comprehensive multi-concept analysis',
       features: [
         'Complex comparisons',
         'Pros and cons analysis',
-        'Multiple perspectives',
-        '~800 tokens max',
-      ],
-      popular: false,
-    },
-    {
-      name: 'Chapter Summary',
-      price: '$0.02',
-      priceNum: 0.02,
-      description: 'Full chapter insights and context',
-      features: [
-        'Deep research insights',
-        'Historical context',
         'Complete frameworks',
-        '~1500 tokens max',
       ],
       popular: false,
     },
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {tiers.map((tier, index) => (
         <div
           key={index}

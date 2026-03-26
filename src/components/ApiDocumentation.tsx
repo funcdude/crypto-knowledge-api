@@ -240,10 +240,9 @@ result = await query_crypto_knowledge("How does Bitcoin work?")`,
                   </thead>
                   <tbody>
                     {[
-                      { tier: 'Snippet', param: 'snippet', cost: '0.001', response: 'Short text' },
-                      { tier: 'Explanation', param: 'explanation', cost: '0.005', response: 'Detailed text' },
-                      { tier: 'Analysis', param: 'analysis', cost: '0.01', response: 'Comprehensive text' },
-                      { tier: 'Chapter Summary', param: 'chapter_summary', cost: '0.02', response: 'Full insights' },
+                      { tier: 'Explanation', param: 'explanation', cost: '0.01', response: '1-2 paragraphs' },
+                      { tier: 'Summary', param: 'summary', cost: '0.02', response: 'Detailed overview' },
+                      { tier: 'Analysis', param: 'analysis', cost: '0.03', response: 'Comprehensive analysis' },
                     ].map((row, i) => (
                       <tr key={i} className={`border-b border-outline-variant/5 ${i % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface-container-low'}`}>
                         <td className="px-6 py-4 font-bold text-primary text-xs">{row.tier}</td>

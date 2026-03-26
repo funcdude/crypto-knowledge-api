@@ -88,7 +88,7 @@ export default function HomePage() {
                 <div className="space-y-2 text-primary/80">
                   <p><span className="text-on-surface-variant/40">01</span> GET /api/v1/search?q=&quot;bitcoin+consensus&quot;</p>
                   <p><span className="text-on-surface-variant/40">02</span> <span className="text-error">HTTP 402 Payment Required</span></p>
-                  <p><span className="text-on-surface-variant/40">03</span> X-X402-Payment-Request: 0.005 USDC</p>
+                  <p><span className="text-on-surface-variant/40">03</span> X-X402-Payment-Request: 0.01 USDC</p>
                   <p><span className="text-on-surface-variant/40">04</span> <span className="text-secondary"># Agent signs Base transaction...</span></p>
                   <p><span className="text-on-surface-variant/40">05</span> X-Payment: 0x7a2d...f3e1</p>
                   <p><span className="text-on-surface-variant/40">06</span> <span className="text-green-400">HTTP 200 OK</span></p>
@@ -113,7 +113,7 @@ export default function HomePage() {
               <div className="text-3xl mb-4">⚡</div>
               <h3 className="text-lg font-semibold mb-2">X402 Payments</h3>
               <p className="text-on-surface-variant text-sm">
-                Micropayments starting at $0.001 USDC with 2-second settlement on Base
+                Micropayments starting at $0.01 USDC with 2-second settlement on Base
               </p>
             </div>
 
@@ -153,7 +153,7 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold text-center mb-8">Platform Stats</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
               <div className="bg-surface-container p-6 rounded-xl border border-outline-variant/15">
-                <div className="text-3xl font-bold font-mono text-primary mb-1">$0.001</div>
+                <div className="text-3xl font-bold font-mono text-primary mb-1">$0.01</div>
                 <div className="text-on-surface-variant text-sm">Starting Price</div>
               </div>
               <div className="bg-surface-container p-6 rounded-xl border border-outline-variant/15">

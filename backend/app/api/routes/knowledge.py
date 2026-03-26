@@ -176,7 +176,7 @@ async def require_payment(
 async def search_knowledge(
     request: Request,
     q: str = Query(..., description="Search query"),
-    tier: str = Query("explanation", description="Response tier (snippet|explanation|analysis|chapter_summary)"),
+    tier: str = Query("explanation", description="Response tier (explanation|summary|analysis)"),
     topics: Optional[str] = Query(None, description="Comma-separated topics to filter by"),
     complexity: Optional[str] = Query(None, description="Complexity level (beginner|intermediate|advanced)"),
     max_results: int = Query(3, ge=1, le=10, description="Maximum number of results"),
@@ -398,7 +398,7 @@ async def compare_concepts(
     request: Request,
     concept1: str = Query(..., description="First concept to compare"),
     concept2: str = Query(..., description="Second concept to compare"), 
-    tier: str = Query("analysis", description="Response tier (analysis or chapter_summary recommended)"),
+    tier: str = Query("analysis", description="Response tier (summary or analysis recommended)"),
     knowledge_service: KnowledgeService = Depends(get_knowledge_service)
 ):
     """
@@ -409,10 +409,10 @@ async def compare_concepts(
     """
     
     # Validate tier (comparisons need detailed analysis)
-    if tier not in ["analysis", "chapter_summary"]:
+    if tier not in ["analysis", "summary"]:
         raise HTTPException(
             status_code=400,
-            detail={"error": "Comparison requires 'analysis' or 'chapter_summary' tier"}
+            detail={"error": "Comparison requires 'summary' or 'analysis' tier"}
         )
     
     # Require payment  

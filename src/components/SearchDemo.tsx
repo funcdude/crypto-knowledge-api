@@ -3,17 +3,21 @@
 import { useState } from 'react'
 
 const TIERS = [
-  { id: 'snippet', label: 'Snippet', price: '$0.001' },
-  { id: 'explanation', label: 'Explanation', price: '$0.005' },
-  { id: 'analysis', label: 'Analysis', price: '$0.01' },
-  { id: 'chapter_summary', label: 'Summary', price: '$0.02' },
+  { id: 'explanation', label: 'Explanation', price: '$0.01' },
+  { id: 'summary', label: 'Summary', price: '$0.02' },
+  { id: 'analysis', label: 'Analysis', price: '$0.03' },
 ]
 
 const TIER_COSTS: Record<string, string> = {
-  snippet: '$0.001',
-  explanation: '$0.005',
-  analysis: '$0.01',
-  chapter_summary: '$0.02',
+  explanation: '$0.01',
+  summary: '$0.02',
+  analysis: '$0.03',
+}
+
+const TIER_MAX_RESULTS: Record<string, number> = {
+  explanation: 2,
+  summary: 4,
+  analysis: 6,
 }
 
 export function SearchDemo() {
@@ -32,7 +36,7 @@ export function SearchDemo() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/search?q=${encodeURIComponent(query)}&tier=${tier}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/search?q=${encodeURIComponent(query)}&tier=${tier}&max_results=${TIER_MAX_RESULTS[tier] || 3}`
       )
 
       const data = await response.json()
