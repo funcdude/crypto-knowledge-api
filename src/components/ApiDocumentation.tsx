@@ -78,22 +78,6 @@ async def query_sage_molly(query: str, tier: str = "explanation"):
 # Tiers: explanation ($0.01) | summary ($0.02) | analysis ($0.03)
 result = await query_sage_molly("What is fractional reserve?", "analysis")`,
     },
-    {
-      title: 'MCP Server Integration',
-      language: 'json',
-      code: `{
-  "mcpServers": {
-    "sage-molly": {
-      "command": "npx",
-      "args": ["sage-molly-mcp"],
-      "env": {
-        "API_URL": "https://sagemolly.com",
-        "WALLET_PRIVATE_KEY": "your-base-l2-private-key"
-      }
-    }
-  }
-}`,
-    },
   ]
 
   const endpoints = [
