@@ -176,14 +176,14 @@ export function SearchDemo() {
                 <span className="px-2 py-1 rounded bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest">Knowledge Retrieved</span>
                 <span className="text-xs font-mono text-green-400">HTTP 200</span>
               </div>
-              <div className="flex-1 space-y-3 overflow-y-auto max-h-64">
+              <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px]">
                 {result.data.results?.map((item: any, index: number) => (
                   <div key={index} className="bg-surface-container-lowest rounded border border-outline-variant/15 p-3">
-                    <p className="text-on-surface text-sm leading-relaxed mb-2">{item.content}</p>
+                    <p className="text-on-surface text-sm leading-relaxed mb-1">{item.content}</p>
                     {item.source && (
-                      <div className="text-[11px] font-mono text-on-surface-variant bg-surface p-2 rounded border border-outline-variant/10">
-                        Source: {item.source?.book} — {item.chapter}
-                      </div>
+                      <p className="text-[10px] text-on-surface-variant/60 truncate">
+                        {item.source?.book} — {item.chapter}
+                      </p>
                     )}
                   </div>
                 ))}
