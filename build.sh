@@ -10,7 +10,9 @@ echo "--- Building Next.js ---"
 npm run build
 
 echo "--- Installing Python dependencies ---"
-cd /home/runner/workspace/backend
-pip install -r requirements.txt 2>/dev/null || echo "Python deps already installed"
+cd backend
+pip install -r requirements.txt
+echo "--- Verifying Python imports ---"
+python3 -c "from app.main import app; print('Backend imports verified')"
 
 echo "=== Build complete ==="
