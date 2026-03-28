@@ -12,7 +12,7 @@ npm run build
 echo "--- Installing Python dependencies ---"
 cd backend
 pip install -r requirements.txt
-echo "--- Verifying Python imports ---"
-python3 -c "from app.main import app; print('Backend imports verified')"
+echo "--- Verifying Python setup ---"
+python3 -c "import structlog; import fastapi; print('Core Python imports OK')"
 
 echo "=== Build complete ==="

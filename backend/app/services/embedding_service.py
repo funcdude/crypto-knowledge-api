@@ -2,9 +2,6 @@
 
 import asyncio
 from typing import List, Dict, Any, Optional
-import openai
-from pinecone import Pinecone
-import numpy as np
 import structlog
 
 logger = structlog.get_logger()
@@ -13,28 +10,46 @@ class EmbeddingService:
     """Service for generating and managing embeddings for semantic search"""
 
     def __init__(self, openai_api_key: str, pinecone_api_key: str, index_name: str = "crypto-knowledge"):
-        self.openai_client = openai.OpenAI(api_key=openai_api_key)
-
-        # Initialize Pinecone v3 client
-        self._pc = Pinecone(api_key=pinecone_api_key)
+        self._openai_api_key = openai_api_key
+        self._pinecone_api_key = pinecone_api_key
+        self._openai_client = None
+        self._pc = None
+        self._index = None
 
         self.index_name = index_name
         self.embedding_model = "text-embedding-ada-002"
-        self.embedding_dimension = 1536  # matches the Pinecone index dimension
+        self.embedding_dimension = 1536
 
-        # Connect to existing index
-        self.index = self._get_index()
+    @property
+    def openai_client(self):
+        if self._openai_client is None:
+            import openai
+            self._openai_client = openai.OpenAI(api_key=self._openai_api_key)
+        return self._openai_client
+
+    @property
+    def pc(self):
+        if self._pc is None:
+            from pinecone import Pinecone
+            self._pc = Pinecone(api_key=self._pinecone_api_key)
+        return self._pc
+
+    @property
+    def index(self):
+        if self._index is None:
+            self._index = self._get_index()
+        return self._index
 
     def _get_index(self):
         """Connect to existing Pinecone index"""
         try:
-            existing = [i.name for i in self._pc.list_indexes()]
+            existing = [i.name for i in self.pc.list_indexes()]
             if self.index_name not in existing:
                 raise RuntimeError(
                     f"Pinecone index '{self.index_name}' not found. "
                     f"Available indexes: {existing}"
                 )
-            return self._pc.Index(self.index_name)
+            return self.pc.Index(self.index_name)
         except Exception as e:
             logger.error("Failed to connect to Pinecone index", error=str(e))
             raise
@@ -228,11 +243,10 @@ class EmbeddingService:
     def calculate_similarity(self, embedding1: List[float], embedding2: List[float]) -> float:
         """Calculate cosine similarity between two embeddings"""
         try:
-            # Convert to numpy arrays
+            import numpy as np
             vec1 = np.array(embedding1)
             vec2 = np.array(embedding2)
             
-            # Calculate cosine similarity
             dot_product = np.dot(vec1, vec2)
             norm1 = np.linalg.norm(vec1)
             norm2 = np.linalg.norm(vec2)
