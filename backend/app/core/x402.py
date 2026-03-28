@@ -7,10 +7,24 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import httpx
-from web3 import Web3
-from eth_account import Account
-from eth_utils import to_checksum_address
 import structlog
+
+_web3_mod = None
+_eth_utils_mod = None
+
+def _get_web3():
+    global _web3_mod
+    if _web3_mod is None:
+        from web3 import Web3
+        _web3_mod = Web3
+    return _web3_mod
+
+def _get_to_checksum_address():
+    global _eth_utils_mod
+    if _eth_utils_mod is None:
+        from eth_utils import to_checksum_address
+        _eth_utils_mod = to_checksum_address
+    return _eth_utils_mod
 
 from app.core.config import get_settings, format_price_for_usdc
 
@@ -48,21 +62,13 @@ class X402Manager:
         chain_id: int = 8453,  # Base
         facilitator_url: str = "https://facilitator.coinbase.com"
     ):
-        self.payment_address = to_checksum_address(payment_address)
+        self._payment_address = payment_address
         self.chain_id = chain_id
         self.facilitator_url = facilitator_url
         self.settings = get_settings()
+        self._w3 = None
+        self._usdc_contract = None
         
-        # Initialize Web3 connection for Base
-        if chain_id == 8453:  # Base
-            self.w3 = Web3(Web3.HTTPProvider("https://mainnet.base.org"))
-        else:
-            self.w3 = Web3(Web3.HTTPProvider("https://eth-mainnet.alchemyapi.io/v2/your-key"))
-            
-        # USDC contract address on Base
-        self.usdc_address = to_checksum_address("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913")
-        
-        # USDC ABI (minimal - just what we need)
         self.usdc_abi = [
             {
                 "constant": True,
@@ -82,11 +88,33 @@ class X402Manager:
                 "type": "function"
             }
         ]
-        
-        self.usdc_contract = self.w3.eth.contract(
-            address=self.usdc_address,
-            abi=self.usdc_abi
-        )
+
+    @property
+    def payment_address(self):
+        return _get_to_checksum_address()(self._payment_address)
+
+    @property
+    def w3(self):
+        if self._w3 is None:
+            Web3 = _get_web3()
+            if self.chain_id == 8453:
+                self._w3 = Web3(Web3.HTTPProvider("https://mainnet.base.org"))
+            else:
+                self._w3 = Web3(Web3.HTTPProvider("https://eth-mainnet.alchemyapi.io/v2/your-key"))
+        return self._w3
+
+    @property
+    def usdc_address(self):
+        return _get_to_checksum_address()("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913")
+
+    @property
+    def usdc_contract(self):
+        if self._usdc_contract is None:
+            self._usdc_contract = self.w3.eth.contract(
+                address=self.usdc_address,
+                abi=self.usdc_abi
+            )
+        return self._usdc_contract
         
     def create_payment_requirement(
         self,
@@ -317,8 +345,8 @@ class X402Manager:
             if log.address.lower() == self.usdc_address.lower():
                 if log.topics[0].hex() == transfer_sig:
                     # Parse transfer event
-                    from_addr = to_checksum_address("0x" + log.topics[1].hex()[26:])
-                    to_addr = to_checksum_address("0x" + log.topics[2].hex()[26:])
+                    from_addr = _get_to_checksum_address()("0x" + log.topics[1].hex()[26:])
+                    to_addr = _get_to_checksum_address()("0x" + log.topics[2].hex()[26:])
                     amount = int(log.data, 16)
                     
                     return {
