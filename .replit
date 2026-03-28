@@ -83,6 +83,6 @@ SKIP_PAYMENT_VERIFY = "false"
 DEBUG = "false"
 
 [deployment]
-deploymentTarget = "cloudrun"
-run = ["node", "node_modules/next/dist/bin/next", "start", "-p", "5000", "-H", "0.0.0.0"]
+deploymentTarget = "vm"
+run = ["node", "server.js"]
 build = ["bash", "build.sh"]
