@@ -1,0 +1,19 @@
+Security Review Results
+Severity	Finding	Details
+🔴 High	Free-tier bypass via disposable emails	Quota keyed on unverified email only — no OTP, no IP correlation, no CAPTCHA. test+1@example.com, test+2@example.com etc. each get 3 fresh free queries. Unlimited free access possible.
+🔴 High	CORS misconfiguration	All /api/v1/* responses return both Access-Control-Allow-Origin: * and Access-Control-Allow-Credentials: true — an invalid combination per spec. Any origin can read unauthenticated API responses; one config change away from credential theft vector.
+🟠 Medium	Missing security headers	No Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, or Permissions-Policy. Clickjacking and XSS mitigations absent.
+🟠 Medium	Session cookie missing flags	GAESA cookie lacks HttpOnly, Secure, and SameSite flags — vulnerable to JS theft if XSS is found, and no CSRF protection.
+🟠 Medium	Validation errors expose internals	422 responses include full Pydantic v2.5 error objects with field paths and doc URLs — confirms FastAPI/Python stack and exact dependency version.
+🟠 Medium	Replit IDs in page HTML	data-deployment-id and data-repl-id embedded in feedback widget script tag — enables enumeration if project is public.
+🟡 Low	Unauthenticated free-status oracle	GET /api/v1/free-status?email=<any> returns any user's query count — minor user enumeration / privacy concern.
+ℹ️ Info	X402 payment wallet address public	By design for X402 protocol. Ensure receiving wallet is dedicated and not reused as a personal wallet.
+Top Recommendations
+Priority	Action
+1	Add email OTP verification + per-IP rate limiting to close the free-tier bypass
+2	Fix CORS: remove Allow-Credentials: true for public API, or restrict Allow-Origin to an explicit allow-list
+3	Add security headers in next.config.js (CSP, X-Frame-Options, X-Content-Type-Options)
+4	Set HttpOnly, Secure, SameSite=Lax on session cookies
+5	Suppress Pydantic validation details in 422 responses
+6	Verify X402 payment replay protection (nonce/tx-hash deduplication server-side)
+Overall: Functionally solid — the core Q&A flow, X402 payment gate, and API docs all work correctly. The main risk is the free-tier monetization gate being easily bypassed, and a cluster of missing hardening headers/cookie flags that are straightforward to fix.

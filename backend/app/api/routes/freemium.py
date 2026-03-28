@@ -1,6 +1,8 @@
 """Freemium query endpoints — 3 free questions with email"""
 
+import re
 from fastapi import APIRouter, Request, HTTPException, Query, Depends
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import structlog
@@ -10,6 +12,19 @@ from app.services.knowledge_service import KnowledgeService
 
 logger = structlog.get_logger()
 router = APIRouter()
+
+FREE_SEARCH_IP_LIMIT = 30
+FREE_SEARCH_IP_WINDOW = 3600
+
+
+def normalize_email(raw: str) -> str:
+    raw = raw.strip().lower()
+    local, domain = raw.split("@", 1)
+    local = local.split("+")[0]
+    if domain in ("gmail.com", "googlemail.com"):
+        local = local.replace(".", "")
+        domain = "gmail.com"
+    return f"{local}@{domain}"
 
 
 class FreeSearchRequest(BaseModel):
@@ -25,14 +40,34 @@ def get_knowledge_service(request: Request) -> KnowledgeService:
     return request.app.state.knowledge_service
 
 
+async def _check_ip_rate_limit(request: Request) -> None:
+    try:
+        client_ip = request.client.host
+        redis_client = request.app.state.redis_client
+        key = f"free_search_ip:{client_ip}"
+        count = await redis_client.incr(key)
+        if count == 1:
+            await redis_client.expire(key, FREE_SEARCH_IP_WINDOW)
+        if count > FREE_SEARCH_IP_LIMIT:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many free search requests from this address. Please try again later.",
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+
+
 @router.post("/free-search")
 async def free_search(
     body: FreeSearchRequest,
     request: Request,
     knowledge_service: KnowledgeService = Depends(get_knowledge_service),
 ):
+    await _check_ip_rate_limit(request)
     settings = get_settings()
-    email = body.email.strip().lower()
+    email = normalize_email(body.email)
 
     db_pool = request.app.state.db_pool
     async with db_pool.pool.acquire() as conn:
@@ -97,13 +132,17 @@ async def free_search(
     }
 
 
-@router.get("/free-status")
+class FreeStatusRequest(BaseModel):
+    email: EmailStr
+
+
+@router.post("/free-status")
 async def free_status(
-    email: str = Query(..., description="Email to check"),
+    body: FreeStatusRequest,
     request: Request = None,
 ):
     settings = get_settings()
-    email = email.strip().lower()
+    email = normalize_email(body.email)
 
     db_pool = request.app.state.db_pool
     async with db_pool.pool.acquire() as conn:

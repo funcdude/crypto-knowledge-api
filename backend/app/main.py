@@ -134,13 +134,14 @@ if settings.ALLOWED_HOSTS:
         allowed_hosts=settings.ALLOWED_HOSTS.split(",")
     )
 
-# CORS middleware
+cors_origins = settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS else ["*"]
+is_wildcard = "*" in cors_origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS else ["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_credentials=not is_wildcard,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Request-ID", "PAYMENT-SIGNATURE"],
 )
 
 # x402 Payment Required handler — x402 v2: PAYMENT-REQUIRED header is base64-encoded JSON
@@ -157,7 +158,18 @@ async def payment_required_handler(request: Request, exc: _PaymentRequired):
         headers={"PAYMENT-REQUIRED": encoded}
     )
 
-# Global exception handler
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "Validation error",
+            "message": "Invalid request parameters. Please check your input and try again.",
+        },
+    )
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(

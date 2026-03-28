@@ -40,7 +40,11 @@ export function SearchDemo() {
     if (stored) {
       setEmail(stored)
       setEmailSubmitted(true)
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/free-status?email=${encodeURIComponent(stored)}`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/free-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: stored }),
+      })
         .then((r) => r.json())
         .then((data) => {
           const count = data.queries_used ?? 0
