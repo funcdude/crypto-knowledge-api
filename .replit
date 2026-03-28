@@ -84,5 +84,5 @@ DEBUG = "false"
 
 [deployment]
 deploymentTarget = "vm"
-run = ["bash", "start.sh"]
+run = ["node", "node_modules/next/dist/bin/next", "start", "-p", "5000", "-H", "0.0.0.0"]
 build = ["bash", "build.sh"]
