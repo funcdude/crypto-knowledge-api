@@ -1,0 +1,108 @@
+2026-03-29 10:14:33.15
+33fce9be
+User
+at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2026-03-29 10:14:33.15
+33fce9be
+User
+at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+2026-03-29 10:14:33.15
+33fce9be
+User
+at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+2026-03-29 10:14:33.15
+33fce9be
+User
+at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2026-03-29 10:14:33.15
+33fce9be
+User
+address: '127.0.0.1',
+2026-03-29 10:14:33.15
+33fce9be
+User
+syscall: 'connect',
+2026-03-29 10:14:33.15
+33fce9be
+User
+Failed to proxy http://localhost:8000/api/v1/pricing Error: connect ECONNREFUSED 127.0.0.1:8000
+2026-03-29 10:14:33.15
+33fce9be
+User
+Error: connect ECONNREFUSED 127.0.0.1:8000
+2026-03-29 10:14:33.15
+33fce9be
+User
+syscall: 'connect',
+2026-03-29 10:14:46.74
+33fce9be
+User
+address: '127.0.0.1',
+2026-03-29 10:14:46.74
+33fce9be
+User
+syscall: 'connect',
+2026-03-29 10:14:46.74
+33fce9be
+User
+Failed to proxy http://localhost:8000/api/v1/search?q=bitcoin&tier=explanation Error: connect ECONNREFUSED 127.0.0.1:8000
+2026-03-29 10:14:46.74
+33fce9be
+User
+code: 'ECONNREFUSED',
+2026-03-29 10:14:46.74
+33fce9be
+User
+at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2026-03-29 10:14:46.74
+33fce9be
+User
+}
+2026-03-29 10:14:46.74
+33fce9be
+User
+at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+2026-03-29 10:14:46.74
+33fce9be
+User
+port: 8000
+2026-03-29 10:14:46.74
+33fce9be
+User
+errno: -111,
+2026-03-29 10:14:46.74
+33fce9be
+User
+at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2026-03-29 10:14:46.74
+33fce9be
+User
+}
+2026-03-29 10:14:46.74
+33fce9be
+User
+port: 8000
+2026-03-29 10:14:46.74
+33fce9be
+User
+at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+2026-03-29 10:14:46.74
+33fce9be
+User
+code: 'ECONNREFUSED',
+2026-03-29 10:14:46.74
+33fce9be
+User
+errno: -111,
+2026-03-29 10:14:46.74
+33fce9be
+User
+syscall: 'connect',
+2026-03-29 10:14:46.74
+33fce9be
+User
+Error: connect ECONNREFUSED 127.0.0.1:8000
+2026-03-29 10:14:46.74
+33fce9be
+User
+address: '127.0.0.1',

@@ -25,28 +25,29 @@ class DatabasePool:
 async def get_db_pool(database_url: str) -> DatabasePool:
     """
     Create and return an AsyncPG connection pool
-    
-    Args:
-        database_url: PostgreSQL connection string
-        
-    Returns:
-        DatabasePool instance
     """
-    
-    try:
-        pool = await asyncpg.create_pool(
-            database_url,
-            min_size=5,
-            max_size=20,
-            command_timeout=60
-        )
-        
-        logger.info("Database pool created", min_size=5, max_size=20)
-        return DatabasePool(pool)
-        
-    except Exception as e:
-        logger.error("Failed to create database pool", error=str(e))
-        raise
+    import asyncio
+
+    for attempt in range(3):
+        try:
+            pool = await asyncio.wait_for(
+                asyncpg.create_pool(
+                    database_url,
+                    min_size=1,
+                    max_size=10,
+                    command_timeout=30,
+                ),
+                timeout=30,
+            )
+            logger.info("Database pool created", attempt=attempt + 1)
+            return DatabasePool(pool)
+        except Exception as e:
+            logger.warning("DB connection attempt failed", attempt=attempt + 1, error=str(e))
+            if attempt < 2:
+                await asyncio.sleep(2)
+            else:
+                logger.error("Failed to create database pool after 3 attempts", error=str(e))
+                raise
 
 
 async def init_db(db_pool: DatabasePool) -> None:

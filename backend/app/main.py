@@ -58,11 +58,15 @@ async def lifespan(app: FastAPI):
             "This setting must only be used in local development."
         )
     
-    # Initialize database connection pool and schema
-    app.state.db_pool = await get_db_pool(settings.DATABASE_URL)
-    await init_db(app.state.db_pool)
-    logger.info("Database connection pool initialized")
-    
+    # Initialize database connection pool and schema (with graceful degradation)
+    try:
+        app.state.db_pool = await get_db_pool(settings.DATABASE_URL)
+        await init_db(app.state.db_pool)
+        logger.info("Database connection pool initialized")
+    except Exception as e:
+        logger.error("Database initialization failed — running in degraded mode", error=str(e))
+        app.state.db_pool = None
+
     # Initialize Redis cache
     app.state.redis_client = await get_redis_client(settings.REDIS_URL)
     logger.info("Redis cache client initialized")
@@ -70,7 +74,7 @@ async def lifespan(app: FastAPI):
     # Initialize X402 manager
     app.state.x402_manager = X402Manager(
         payment_address=settings.PAYMENT_ADDRESS,
-        chain_id=8453,  # Base chain
+        chain_id=8453,
         facilitator_url=settings.X402_FACILITATOR_URL
     )
     logger.info("X402 payment manager initialized")
@@ -89,12 +93,16 @@ async def lifespan(app: FastAPI):
     
     # Initialize knowledge service (with graceful degradation)
     try:
+        db_pool = app.state.db_pool
         app.state.knowledge_service = KnowledgeService(
-            db_pool=app.state.db_pool,
+            db_pool=db_pool,
             embedding_service=app.state.embedding_service,
             redis_client=app.state.redis_client
-        )
-        logger.info("Knowledge service initialized")
+        ) if db_pool else None
+        if app.state.knowledge_service:
+            logger.info("Knowledge service initialized")
+        else:
+            logger.warning("Knowledge service unavailable — no database connection")
     except Exception as e:
         logger.warning("Knowledge service initialization failed (will retry on use)", error=str(e))
         app.state.knowledge_service = None
@@ -106,7 +114,7 @@ async def lifespan(app: FastAPI):
     # Shutdown tasks
     logger.info("Shutting down Sage Molly...")
     
-    if hasattr(app.state, 'db_pool'):
+    if hasattr(app.state, 'db_pool') and app.state.db_pool is not None:
         await app.state.db_pool.close()
         logger.info("Database connections closed")
     
