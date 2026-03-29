@@ -26,6 +26,9 @@ web3==6.12.0
 eth-account==0.9.0
 eth-utils==2.3.0
 
+# X402 Protocol
+x402>=2.5.0
+
 # Utilities
 python-dotenv==1.0.0
 structlog==23.2.0

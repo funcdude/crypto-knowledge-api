@@ -288,10 +288,11 @@ class X402Manager:
     ) -> PaymentProof:
         """Verify payment via facilitator /settle with multi-URL fallback.
 
-        X402 v2 facilitators expect:
+        X402 v2 facilitators expect (per SDK _build_request_body):
         {
-            "paymentPayload": "<base64 X-Payment header value>",
-            "paymentRequirements": { <the accepts[0] object from the 402 challenge> }
+            "x402Version": 2,
+            "paymentPayload": { <decoded payload dict> },
+            "paymentRequirements": { <requirements dict> }
         }
         """
         from app.core.config import get_settings as _gs
@@ -307,6 +308,15 @@ class X402Manager:
                 timestamp=datetime.utcnow(),
             )
 
+        import base64 as _b64
+        try:
+            payload_json = _b64.b64decode(raw_payment_header + "==").decode()
+            payload_dict = json.loads(payload_json)
+        except Exception:
+            payload_dict = {"raw": raw_payment_header}
+
+        x402_version = payload_dict.get("x402Version", 2)
+
         payment_requirements = self.build_payment_requirements(tier) if tier else {
             "scheme": "exact",
             "network": f"eip155:{self.chain_id}",
@@ -318,13 +328,15 @@ class X402Manager:
         }
 
         facilitator_body = {
-            "paymentPayload": raw_payment_header,
+            "x402Version": x402_version,
+            "paymentPayload": payload_dict,
             "paymentRequirements": payment_requirements,
         }
 
         logger.info(
             "Sending to facilitator",
-            has_payload=bool(raw_payment_header),
+            x402_version=x402_version,
+            payload_keys=list(payload_dict.keys()),
             requirements_amount=payment_requirements.get("amount"),
             requirements_payTo=payment_requirements.get("payTo"),
         )
