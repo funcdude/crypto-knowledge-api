@@ -145,10 +145,10 @@ async def require_payment(
         pricing = get_pricing_config()
         expected_amount = str(int(pricing[tier]["price"] * 1_000_000))  # USDC has 6 decimals
 
-        # Verify payment on blockchain / facilitator
         payment_proof = await x402_manager.verify_payment(
             payment_data=payment_data,
-            expected_amount=expected_amount
+            expected_amount=expected_amount,
+            tier=tier,
         )
 
         # Only cache when we have a real tx hash

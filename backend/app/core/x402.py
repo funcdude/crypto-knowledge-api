@@ -176,29 +176,27 @@ class X402Manager:
         }
     
     def parse_payment_header(self, payment_header: str) -> Dict[str, Any]:
-        """Parse PAYMENT-SIGNATURE header from X402 v2 request (base64-encoded JSON)"""
+        """Parse X-Payment / PAYMENT-SIGNATURE header from X402 v2 request"""
         import base64 as _b64
         try:
-            # x402 v2: base64-encoded PaymentPayload
-            decoded = _b64.b64decode(payment_header + "==").decode()  # pad for safety
+            decoded = _b64.b64decode(payment_header + "==").decode()
             data = json.loads(decoded)
 
-            # Extract transaction hash from x402 v2 payload
+            tx_hash = None
             if "payload" in data:
                 payload = data["payload"]
                 tx_hash = payload.get("transaction") or payload.get("transaction_hash") or payload.get("txHash")
-                chain_id = data.get("accepted", {}).get("network", "eip155:8453").split(":")[-1]
-                return {
-                    "transaction_hash": tx_hash,
-                    "chain_id": int(chain_id) if chain_id.isdigit() else self.chain_id,
-                    "raw": data
-                }
+            elif "transaction_hash" in data:
+                tx_hash = data["transaction_hash"]
 
-            # Legacy JSON format
-            if "transaction_hash" in data:
-                return data
+            chain_id_str = data.get("accepted", {}).get("network", "eip155:8453").split(":")[-1]
 
-            raise ValueError("No transaction hash found in payment payload")
+            return {
+                "transaction_hash": tx_hash,
+                "chain_id": int(chain_id_str) if chain_id_str.isdigit() else self.chain_id,
+                "raw": data,
+                "raw_header": payment_header,
+            }
 
         except Exception as e:
             logger.error("Failed to parse payment header", error=str(e))
@@ -218,19 +216,44 @@ class X402Manager:
                 return val
         return None
 
+    def build_payment_requirements(self, tier: str) -> Dict[str, Any]:
+        """Build the paymentRequirements object that matches the 402 challenge we issued"""
+        from app.core.config import get_pricing_config
+        pricing = get_pricing_config()
+        tier_config = pricing[tier]
+        amount = str(int(tier_config["price"] * 1_000_000))
+
+        return {
+            "scheme": "exact",
+            "network": f"eip155:{self.chain_id}",
+            "asset": str(self.usdc_address),
+            "amount": amount,
+            "payTo": self.payment_address,
+            "maxTimeoutSeconds": 300,
+            "extra": {
+                "name": "USD Coin",
+                "version": "2",
+                "decimals": 6,
+            },
+        }
+
     async def verify_payment(
         self,
         payment_data: Dict[str, Any],
         expected_amount: str,
-        expected_recipient: Optional[str] = None
+        expected_recipient: Optional[str] = None,
+        tier: Optional[str] = None,
     ) -> PaymentProof:
         """Verify x402 v2 payment — facilitator first, on-chain fallback"""
 
+        raw_header = payment_data.get("raw_header")
         raw = payment_data.get("raw")
 
-        if raw:
+        if raw_header and tier:
             try:
-                return await self._verify_via_facilitator(raw, expected_amount)
+                return await self._verify_via_facilitator(
+                    raw_header, tier, expected_amount
+                )
             except ValueError as e:
                 if "unreachable" not in str(e).lower():
                     raise
@@ -241,6 +264,16 @@ class X402Manager:
                 raise ValueError(
                     "Facilitator unreachable and no transaction hash in payload for on-chain fallback"
                 )
+        elif raw:
+            try:
+                return await self._verify_via_facilitator(
+                    payment_data.get("raw_header", ""), tier, expected_amount
+                )
+            except Exception:
+                tx_hash = self._extract_tx_hash(payment_data)
+                if tx_hash:
+                    return await self._verify_on_chain(tx_hash, expected_amount, expected_recipient)
+                raise
 
         tx_hash = payment_data.get("transaction_hash")
         if not tx_hash:
@@ -249,10 +282,18 @@ class X402Manager:
 
     async def _verify_via_facilitator(
         self,
-        payment_payload: Dict[str, Any],
-        expected_amount: str
+        raw_payment_header: str,
+        tier: Optional[str],
+        expected_amount: str,
     ) -> PaymentProof:
-        """Verify payment via facilitator /settle with multi-URL fallback"""
+        """Verify payment via facilitator /settle with multi-URL fallback.
+
+        X402 v2 facilitators expect:
+        {
+            "paymentPayload": "<base64 X-Payment header value>",
+            "paymentRequirements": { <the accepts[0] object from the 402 challenge> }
+        }
+        """
         from app.core.config import get_settings as _gs
         if _gs().SKIP_PAYMENT_VERIFY:
             logger.warning("SKIP_PAYMENT_VERIFY=true — skipping payment verification (dev mode)")
@@ -266,6 +307,28 @@ class X402Manager:
                 timestamp=datetime.utcnow(),
             )
 
+        payment_requirements = self.build_payment_requirements(tier) if tier else {
+            "scheme": "exact",
+            "network": f"eip155:{self.chain_id}",
+            "asset": str(self.usdc_address),
+            "amount": expected_amount,
+            "payTo": self.payment_address,
+            "maxTimeoutSeconds": 300,
+            "extra": {"name": "USD Coin", "version": "2", "decimals": 6},
+        }
+
+        facilitator_body = {
+            "paymentPayload": raw_payment_header,
+            "paymentRequirements": payment_requirements,
+        }
+
+        logger.info(
+            "Sending to facilitator",
+            has_payload=bool(raw_payment_header),
+            requirements_amount=payment_requirements.get("amount"),
+            requirements_payTo=payment_requirements.get("payTo"),
+        )
+
         urls_to_try = [self.facilitator_url] + [
             u for u in self.FACILITATOR_URLS if u != self.facilitator_url
         ]
@@ -276,8 +339,8 @@ class X402Manager:
                 async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
                     resp = await client.post(
                         f"{url}/settle",
-                        json=payment_payload,
-                        headers={"Content-Type": "application/json"}
+                        json=facilitator_body,
+                        headers={"Content-Type": "application/json"},
                     )
 
                 if resp.status_code not in (200, 201):

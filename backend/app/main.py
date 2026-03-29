@@ -149,7 +149,7 @@ app.add_middleware(
     allow_origins=cors_origins,
     allow_credentials=not is_wildcard,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Request-ID", "PAYMENT-SIGNATURE"],
+    allow_headers=["Content-Type", "Authorization", "X-Request-ID", "X-Payment", "PAYMENT-SIGNATURE"],
 )
 
 # x402 Payment Required handler — x402 v2: PAYMENT-REQUIRED header is base64-encoded JSON
