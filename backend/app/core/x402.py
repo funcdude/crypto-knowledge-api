@@ -56,11 +56,16 @@ class PaymentProof:
 class X402Manager:
     """Manages X402 payment flows and verification"""
     
+    FACILITATOR_URLS = [
+        "https://facilitator.xpay.sh",
+        "https://x402.org/facilitator",
+    ]
+
     def __init__(
         self, 
         payment_address: str,
         chain_id: int = 8453,  # Base
-        facilitator_url: str = "https://facilitator.coinbase.com"
+        facilitator_url: str = "https://facilitator.xpay.sh"
     ):
         self._payment_address = payment_address
         self.chain_id = chain_id
@@ -199,21 +204,44 @@ class X402Manager:
             logger.error("Failed to parse payment header", error=str(e))
             raise ValueError(f"Invalid payment header format: {e}")
     
+    def _extract_tx_hash(self, payment_data: Dict[str, Any]) -> Optional[str]:
+        """Extract transaction hash from any payment payload format"""
+        tx = payment_data.get("transaction_hash")
+        if tx:
+            return tx
+
+        raw = payment_data.get("raw", {})
+        payload = raw.get("payload", {})
+        for key in ("transaction", "transaction_hash", "txHash"):
+            val = payload.get(key) or raw.get(key)
+            if val and val.startswith("0x"):
+                return val
+        return None
+
     async def verify_payment(
         self,
         payment_data: Dict[str, Any],
         expected_amount: str,
         expected_recipient: Optional[str] = None
     ) -> PaymentProof:
-        """Verify x402 v2 payment via Coinbase facilitator (EIP-3009 authorization flow)"""
+        """Verify x402 v2 payment — facilitator first, on-chain fallback"""
 
         raw = payment_data.get("raw")
 
-        # x402 v2: forward raw PaymentPayload to facilitator /settle
         if raw:
-            return await self._verify_via_facilitator(raw, expected_amount)
+            try:
+                return await self._verify_via_facilitator(raw, expected_amount)
+            except ValueError as e:
+                if "unreachable" not in str(e).lower():
+                    raise
+                logger.warning("Facilitator unreachable, falling back to on-chain verification")
+                tx_hash = self._extract_tx_hash(payment_data)
+                if tx_hash:
+                    return await self._verify_on_chain(tx_hash, expected_amount, expected_recipient)
+                raise ValueError(
+                    "Facilitator unreachable and no transaction hash in payload for on-chain fallback"
+                )
 
-        # Legacy: direct blockchain tx lookup
         tx_hash = payment_data.get("transaction_hash")
         if not tx_hash:
             raise ValueError("Transaction hash required")
@@ -224,7 +252,7 @@ class X402Manager:
         payment_payload: Dict[str, Any],
         expected_amount: str
     ) -> PaymentProof:
-        """Verify payment via Coinbase facilitator /settle or skip in dev mode"""
+        """Verify payment via facilitator /settle with multi-URL fallback"""
         from app.core.config import get_settings as _gs
         if _gs().SKIP_PAYMENT_VERIFY:
             logger.warning("SKIP_PAYMENT_VERIFY=true — skipping payment verification (dev mode)")
@@ -238,54 +266,62 @@ class X402Manager:
                 timestamp=datetime.utcnow(),
             )
 
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                resp = await client.post(
-                    f"{self.facilitator_url}/settle",
-                    json=payment_payload,
-                    headers={"Content-Type": "application/json"}
-                )
+        urls_to_try = [self.facilitator_url] + [
+            u for u in self.FACILITATOR_URLS if u != self.facilitator_url
+        ]
+        last_error = None
 
-            if resp.status_code not in (200, 201):
-                logger.error("Facilitator settle failed", status=resp.status_code, body=resp.text)
-                raise ValueError(f"Facilitator rejected payment: {resp.status_code} {resp.text}")
-
-            result = resp.json()
-
-            # C-3: Validate facilitator response — check settled amount >= expected
-            settled_amount = (
-                result.get("amount")
-                or result.get("settledAmount")
-                or result.get("value")
-            )
-            if settled_amount is not None:
-                if int(settled_amount) < int(expected_amount):
-                    raise ValueError(
-                        f"Facilitator settled {settled_amount} but expected {expected_amount} — "
-                        "possible tier mismatch attack"
+        for url in urls_to_try:
+            try:
+                async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                    resp = await client.post(
+                        f"{url}/settle",
+                        json=payment_payload,
+                        headers={"Content-Type": "application/json"}
                     )
 
-            # Validate recipient matches our payment address
-            settled_to = result.get("to") or result.get("recipient")
-            if settled_to and settled_to.lower() != self.payment_address.lower():
-                raise ValueError(
-                    f"Facilitator settled to wrong address: {settled_to}"
+                if resp.status_code not in (200, 201):
+                    logger.error("Facilitator settle failed", url=url, status=resp.status_code, body=resp.text)
+                    raise ValueError(f"Facilitator rejected payment: {resp.status_code} {resp.text}")
+
+                result = resp.json()
+
+                settled_amount = (
+                    result.get("amount")
+                    or result.get("settledAmount")
+                    or result.get("value")
+                )
+                if settled_amount is not None:
+                    if int(settled_amount) < int(expected_amount):
+                        raise ValueError(
+                            f"Facilitator settled {settled_amount} but expected {expected_amount} — "
+                            "possible tier mismatch attack"
+                        )
+
+                settled_to = result.get("to") or result.get("recipient")
+                if settled_to and settled_to.lower() != self.payment_address.lower():
+                    raise ValueError(
+                        f"Facilitator settled to wrong address: {settled_to}"
+                    )
+
+                logger.info("Facilitator settled payment", url=url, tx=result.get("transaction") or result.get("txHash"))
+
+                return PaymentProof(
+                    transaction_hash=result.get("transaction", result.get("txHash", "facilitator-settled")),
+                    from_address=result.get("from", "unknown"),
+                    to_address=self.payment_address,
+                    amount=expected_amount,
+                    currency="USDC",
+                    chain_id=self.chain_id,
+                    timestamp=datetime.utcnow(),
                 )
 
-            logger.info("Facilitator settled payment", tx=result.get("transaction") or result.get("txHash"))
+            except httpx.RequestError as e:
+                logger.warning("Facilitator unreachable, trying next", url=url, error=str(e))
+                last_error = e
+                continue
 
-            return PaymentProof(
-                transaction_hash=result.get("transaction", result.get("txHash", "facilitator-settled")),
-                from_address=result.get("from", "unknown"),
-                to_address=self.payment_address,
-                amount=expected_amount,
-                currency="USDC",
-                chain_id=self.chain_id,
-                timestamp=datetime.utcnow(),
-            )
-
-        except httpx.RequestError as e:
-            raise ValueError(f"Facilitator unreachable: {e}")
+        raise ValueError(f"All facilitators unreachable: {last_error}")
 
     async def _verify_on_chain(
         self,

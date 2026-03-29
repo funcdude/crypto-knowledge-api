@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     
     # X402 Payment Configuration
     PAYMENT_ADDRESS: str = "0x28e6b3e3e32308787f50e6d99e2b98745b381946"  # Our Bankr wallet
-    X402_FACILITATOR_URL: str = "https://facilitator.coinbase.com"
+    X402_FACILITATOR_URL: str = "https://facilitator.xpay.sh"
     
     # Bankr Integration
     BANKR_API_KEY: Optional[str] = None

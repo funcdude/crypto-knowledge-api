@@ -1,0 +1,32 @@
+Here is the full X402 retest report:
+
+Sage Molly X402 Retest — Results
+Tool: agentcash | Wallet: $9.88 USDC | Date: 2026-03-29
+
+Step-by-Step X402 Flow Breakdown
+Step	Action	Result	Status
+1	agentcash check /api/v1/search?q=bitcoin&tier=explanation	Returns proper 402 challenge: X402 v2, Base (eip155:8453), USDC, $0.01, payTo 0x28E6…	✅ Pass
+2	agentcash check /api/v1/concepts/bitcoin?tier=explanation	Returns proper 402 challenge — same structure, $0.01	✅ Pass
+3	agentcash fetch /api/v1/search?tier=explanation	agentcash signs & submits USDC payment → server tries to verify with X402 facilitator → DNS failure → 400	❌ Fail
+4	agentcash fetch /api/v1/search?tier=summary	Same error	❌ Fail
+5	agentcash fetch /api/v1/search?tier=analysis	Same error	❌ Fail
+6	Balance check post-failure	Still $9.88 — agentcash correctly does not charge on 400 responses	✅ Pass
+Root Cause
+HTTP 400 — "Facilitator unreachable: [Errno -3] Temporary failure in name resolution"
+
+The X402 payment flow breaks at Step 4 on the server side: after agentcash sends a valid on-chain payment proof in the X-Payment header, the Replit backend (FastAPI/Python) tries to call out to the X402 facilitator (e.g. x402.org) to verify the payment, but cannot resolve the hostname — a DNS issue in Replit's sandbox environment.
+
+Component	Status
+402 challenge emitted correctly	✅ Working
+Payment details (amount, network, wallet) correct	✅ Working
+Client-side payment signing (agentcash)	✅ Working
+Server-side facilitator verification (outbound DNS)	❌ Broken
+No double-charge on failure	✅ Correct
+Fix Required
+The backend's X402 facilitator call is failing due to Replit outbound DNS restrictions. Two options:
+
+Option	Action
+Quick fix	In the X402 Python middleware, configure the facilitator URL as a hardcoded IP instead of a hostname — or switch to Coinbase's IP-addressable facilitator endpoint
+Proper fix	Move the X402 verification to a server that has unrestricted outbound DNS (e.g. a VPS, Railway, Fly.io, or Cloudflare Worker), or configure Replit's "Always On" Deployment with a custom outbound proxy
+Self-verify	Implement local payment verification using eth_getLogs on Base RPC instead of delegating to a remote facilitator
+
