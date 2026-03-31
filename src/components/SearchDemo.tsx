@@ -23,6 +23,39 @@ const TIER_MAX_RESULTS: Record<string, number> = {
 const FREE_LIMIT = 3
 const BOOK_URL = 'https://www.amazon.com/Cryptocurrencies-Decrypted-Economic-Freedom-Financial-ebook/dp/B0DQXC7XVJ'
 
+function ConsentModal({ email, onAccept, onDecline }: { email: string; onAccept: () => void; onDecline: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-surface-container-high border border-outline-variant/20 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-5">
+        <div>
+          <h3 className="text-lg font-bold text-on-surface mb-1">Join the Sage Molly list?</h3>
+          <p className="text-sm text-on-surface-variant leading-relaxed">
+            By continuing, <span className="font-mono text-primary">{email}</span> will be added to our mailing list.
+            You may receive occasional updates and promotional content about crypto education.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onDecline}
+            className="flex-1 px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/30 text-on-surface-variant text-sm font-semibold rounded-lg hover:border-outline-variant/50 transition-colors"
+          >
+            No thanks
+          </button>
+          <button
+            onClick={onAccept}
+            className="flex-1 px-4 py-2.5 engine-gradient text-on-primary text-sm font-bold rounded-lg hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            I agree
+          </button>
+        </div>
+        <p className="text-[10px] text-on-surface-variant/40 text-center">
+          You can unsubscribe at any time.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function SearchDemo() {
   const [query, setQuery] = useState('')
   const [tier, setTier] = useState('explanation')
@@ -34,6 +67,9 @@ export function SearchDemo() {
   const [emailSubmitted, setEmailSubmitted] = useState(false)
   const [queriesUsed, setQueriesUsed] = useState(0)
   const [limitReached, setLimitReached] = useState(false)
+
+  const [showConsent, setShowConsent] = useState(false)
+  const [pendingEmail, setPendingEmail] = useState('')
 
   useEffect(() => {
     const stored = localStorage.getItem('sage_molly_email')
@@ -66,7 +102,26 @@ export function SearchDemo() {
   const handleEmailSubmit = () => {
     const trimmed = email.trim()
     if (!trimmed || !trimmed.includes('@')) return
-    localStorage.setItem('sage_molly_email', trimmed)
+    setPendingEmail(trimmed)
+    setShowConsent(true)
+  }
+
+  const handleConsentAccept = () => {
+    setShowConsent(false)
+    localStorage.setItem('sage_molly_email', pendingEmail)
+    localStorage.setItem('sage_molly_consent', 'true')
+    setEmailSubmitted(true)
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/crm-sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: pendingEmail }),
+    }).catch(() => {})
+  }
+
+  const handleConsentDecline = () => {
+    setShowConsent(false)
+    localStorage.setItem('sage_molly_email', pendingEmail)
     setEmailSubmitted(true)
   }
 
@@ -132,6 +187,14 @@ export function SearchDemo() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      {showConsent && (
+        <ConsentModal
+          email={pendingEmail}
+          onAccept={handleConsentAccept}
+          onDecline={handleConsentDecline}
+        />
+      )}
 
       {/* Left: Query Form */}
       <div className="lg:col-span-7">

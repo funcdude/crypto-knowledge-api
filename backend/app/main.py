@@ -18,7 +18,7 @@ from app.core.config import get_settings
 from app.core.database import get_db_pool, init_db
 from app.core.cache import get_redis_client
 from app.core.x402 import X402Manager
-from app.api.routes import knowledge, health, x402, freemium
+from app.api.routes import knowledge, health, x402, freemium, crm
 from app.api.routes.knowledge import _PaymentRequired
 from app.services.knowledge_service import KnowledgeService
 from app.services.embedding_service import EmbeddingService
@@ -238,6 +238,7 @@ app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(x402.router, prefix="/x402", tags=["x402"])
 app.include_router(knowledge.router, prefix="/api/v1", tags=["knowledge"])
 app.include_router(freemium.router, prefix="/api/v1", tags=["freemium"])
+app.include_router(crm.router, prefix="/api/v1", tags=["crm"])
 
 # Root endpoint
 @app.get("/")

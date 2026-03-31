@@ -59,8 +59,12 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 100
     RATE_LIMIT_BURST: int = 10
 
-    # Dev / testing
-    SKIP_PAYMENT_VERIFY: bool = False  # Set to true to bypass blockchain/facilitator verification
+    CRM_BASE_URL: str = "https://simplecrm1.replit.app"
+    CRM_USERNAME: str = ""
+    CRM_EMAIL: str = ""
+    CRM_PASSWORD: str = ""
+
+    SKIP_PAYMENT_VERIFY: bool = False
     
     @validator("DATABASE_URL")
     def validate_database_url(cls, v):
