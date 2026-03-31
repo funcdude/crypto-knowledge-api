@@ -73,6 +73,9 @@ CORS_ORIGINS = "*"
 PAYMENT_ADDRESS = "0x28e6b3e3e32308787f50e6d99e2b98745b381946"
 X402_FACILITATOR_URL = "https://facilitator.coinbase.com"
 SECRET_KEY = "dev-secret-key-change-in-production"
+CRM_BASE_URL = "https://simplecrm1.replit.app"
+CRM_USERNAME = "sagemolly"
+CRM_EMAIL = "sagemolly@sagemolly.com"
 
 [userenv.development]
 SKIP_PAYMENT_VERIFY = "true"
