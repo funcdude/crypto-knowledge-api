@@ -123,9 +123,22 @@ async def free_search(
             max_results=body.max_results,
         )
 
+        LOW_MATCH_THRESHOLD = 50
+        above = [r for r in results if r.get("match_percent", 100) >= LOW_MATCH_THRESHOLD]
+
+        if not above:
+            return {
+                "status": "low_match",
+                "message": "This question doesn't appear to be covered in the book. Try asking about cryptocurrencies, blockchain, DeFi, money, or related topics.",
+                "queries_used": new_count,
+                "queries_limit": settings.FREE_QUERY_LIMIT,
+                "queries_remaining": settings.FREE_QUERY_LIMIT - new_count,
+                "top_match_percent": results[0].get("match_percent", 0) if results else 0,
+            }
+
     return {
         "status": "success",
-        "results": results,
+        "results": above,
         "queries_used": new_count,
         "queries_limit": settings.FREE_QUERY_LIMIT,
         "queries_remaining": settings.FREE_QUERY_LIMIT - new_count,

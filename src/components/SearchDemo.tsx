@@ -171,6 +171,10 @@ export function SearchDemo() {
           localStorage.setItem('sage_molly_queries_used', String(data.queries_used))
           setQueriesUsed(data.queries_used)
           setResult({ type: 'limit_reached', data })
+        } else if (data.status === 'low_match') {
+          setQueriesUsed(data.queries_used)
+          localStorage.setItem('sage_molly_queries_used', String(data.queries_used))
+          setResult({ type: 'low_match', data })
         } else if (data.status === 'success') {
           setQueriesUsed(data.queries_used)
           localStorage.setItem('sage_molly_queries_used', String(data.queries_used))
@@ -394,6 +398,22 @@ export function SearchDemo() {
             </div>
           )}
 
+          {/* Low Match */}
+          {result?.type === 'low_match' && (
+            <div className="flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-4">
+                <span className="px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase tracking-widest">Low Relevance</span>
+                {result.data.top_match_percent !== undefined && (
+                  <span className="text-xs font-mono text-on-surface-variant">{result.data.top_match_percent}% match</span>
+                )}
+              </div>
+              <p className="text-on-surface text-sm leading-relaxed mb-2">{result.data.message}</p>
+              <p className="text-on-surface-variant/60 text-xs leading-relaxed">
+                Sage Molly&apos;s knowledge is based on &ldquo;Cryptocurrencies Decrypted&rdquo; — try rephrasing your question around crypto, blockchain, DeFi, or monetary systems.
+              </p>
+            </div>
+          )}
+
           {/* Limit Reached */}
           {result?.type === 'limit_reached' && (
             <div className="flex-1 flex flex-col">
@@ -444,6 +464,9 @@ export function SearchDemo() {
               <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px]">
                 {result.data.results?.map((item: any, index: number) => (
                   <div key={index} className="bg-surface-container-lowest rounded border border-outline-variant/15 p-3">
+                    {item.match_percent !== undefined && (
+                      <span className="text-[10px] font-mono text-primary/70 block mb-1">{item.match_percent}% match</span>
+                    )}
                     <p className="text-on-surface text-sm leading-relaxed mb-1">{item.content}</p>
                     {item.source && (
                       <p className="text-[10px] text-on-surface-variant/60">
@@ -471,16 +494,39 @@ export function SearchDemo() {
                 )}
               </div>
               <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px]">
-                {result.data.results?.map((item: any, index: number) => (
-                  <div key={index} className="bg-surface-container-lowest rounded border border-outline-variant/15 p-3">
-                    <p className="text-on-surface text-sm leading-relaxed mb-1">{item.content}</p>
-                    {item.source && (
-                      <p className="text-[10px] text-on-surface-variant/60">
-                        {item.source?.author}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                {result.data.results?.map((item: any, index: number) => {
+                  const shareText = `${item.content?.slice(0, 200)}… — via Sage Molly (sagemolly.com)`
+                  const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://sagemolly.com'
+                  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
+                  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
+                  const handleCopy = () => {
+                    navigator.clipboard.writeText(`${item.content}\n\n— via Sage Molly (${shareUrl})`)
+                  }
+                  return (
+                    <div key={index} className="bg-surface-container-lowest rounded border border-outline-variant/15 p-3">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-mono text-primary/70">{item.match_percent ?? Math.min(Math.max(Math.round(((item.relevance_score || 0) - 0.70) / 0.16 * 100), 0), 100)}% match</span>
+                        <div className="flex gap-2 items-center">
+                          <a href={twitterUrl} target="_blank" rel="noopener noreferrer" title="Share on X" className="text-on-surface-variant/40 hover:text-on-surface transition-colors">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                          </a>
+                          <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" title="Share on LinkedIn" className="text-on-surface-variant/40 hover:text-on-surface transition-colors">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                          </a>
+                          <button onClick={handleCopy} title="Copy answer" className="text-on-surface-variant/40 hover:text-on-surface transition-colors">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-on-surface text-sm leading-relaxed mb-1">{item.content}</p>
+                      {item.source && (
+                        <p className="text-[10px] text-on-surface-variant/60">
+                          {item.source?.author}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
 
               {/* Book CTA — after 2nd response */}

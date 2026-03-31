@@ -211,9 +211,15 @@ class KnowledgeService:
                 sentences = content.split(". ")
                 content = ". ".join(sentences[:3]) + ("." if len(sentences) > 3 else "")
             
+            raw_score = result.get("score", 0)
+            FLOOR = 0.70
+            CEIL = 0.86
+            match_pct = min(max(round((raw_score - FLOOR) / (CEIL - FLOOR) * 100), 0), 100)
+
             formatted_result = {
                 "content": content,
-                "relevance_score": result.get("score", 0),
+                "relevance_score": raw_score,
+                "match_percent": match_pct,
                 "chapter": result.get("chapter", "Unknown"),
                 "topics": result.get("topics", []),
                 "complexity": result.get("complexity", "intermediate"),
