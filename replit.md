@@ -1,14 +1,16 @@
-# Sage Molly — MVP v0.3
+# Sage Molly — MVP v0.4
 
 ## Version
-**MVP v0.3** — March 31, 2026 (Production deployed & verified)
+**MVP v0.4** — March 31, 2026
 
 ## Overview
 Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme. Branded as "Sage Molly" — a crypto education agent for humans and AI agents, powered by X402 micropayments on Base L2.
 
-## MVP v0.3 Changes (from v0.2)
+## MVP v0.4 Changes (from v0.3)
 - **Match quality & relevance filter**: Each answer shows a "% match" score (scaled from Pinecone cosine similarity, range 0.70–0.86 mapped to 0–100%). Queries below 50% match threshold return a "Low Relevance" response instead of irrelevant content. Backend adds `match_percent` field to all search results.
 - **Share buttons**: Each result card includes X/Twitter, LinkedIn, and Copy buttons. Share text includes a snippet of the answer + attribution to Sage Molly.
+
+## MVP v0.3 Changes (from v0.2)
 - **Security hardening**: Email normalization (strips +aliases and gmail dots), per-IP rate limiting (30/hr) on free-search, CORS fix (no credentials with wildcard), security headers (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), 422 response suppression, free-status changed to POST
 - **X402 payment flow fixed**: Switched from unreachable `facilitator.coinbase.com` to `facilitator.xpay.sh` (primary) + `x402.org/facilitator` (fallback) + on-chain Base RPC (last resort). Fixed facilitator request body to match x402 v2 spec: `{ x402Version, paymentPayload: <decoded dict>, paymentRequirements: <requirements dict> }`
 - **Production stability**: Backend starts with graceful DB degradation (3 retries, 30s timeout); `server.js` polls backend health before starting Next.js to eliminate startup race; reduced DB pool (min=1, max=10)
