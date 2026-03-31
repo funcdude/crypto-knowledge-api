@@ -85,6 +85,13 @@ The frontend uses the "Synthetic Architect" dark design system — Technical Bru
 - **No hard borders**: Tonal layering + ghost borders at low opacity (`border-outline-variant/15`)
 - **SearchDemo**: Client component with email gate, free query counter, tier selector (after limit), and book CTA
 
+## CRM Integration
+- **Consent popup**: When a user enters their email, a modal asks them to consent to being added to the mailing list with occasional promotional content
+- **"I agree"**: Syncs the email to Simple CRM (`simplecrm1.replit.app`) tagged with `sagemolly`, then proceeds to search
+- **"No thanks"**: Skips CRM sync, proceeds to search without adding to list
+- **Backend route**: `POST /api/v1/crm-sync` — authenticates via JWT (auto-refreshed), creates contact with `sagemolly` tag
+- **CRM auth**: Email + password stored in env vars (`CRM_EMAIL`, `CRM_PASSWORD`); JWT cached with 24h expiry
+
 ## Freemium System
 - **3 free questions** with email signup (stored in `free_queries` PostgreSQL table)
 - Email normalized: strips `+` aliases, removes gmail dots, lowercased
