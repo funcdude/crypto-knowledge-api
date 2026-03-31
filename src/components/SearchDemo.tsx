@@ -23,6 +23,22 @@ const TIER_MAX_RESULTS: Record<string, number> = {
 const FREE_LIMIT = 3
 const BOOK_URL = 'https://www.amazon.com/Cryptocurrencies-Decrypted-Economic-Freedom-Financial-ebook/dp/B0DQXC7XVJ'
 
+const PRELOADED_RESULT = {
+  type: 'sample' as const,
+  data: {
+    results: [
+      {
+        content: 'At its essence, money is a social technology\u2014a tool that facilitates the transfer of value over time and space. It serves as a medium of exchange, a store of value, and a unit of measurement. But to truly understand money, we need to explore the underlying concepts that make it work.',
+        source: { author: 'Cryptocurrencies Decrypted \u2014 Oskar Hurme' },
+      },
+      {
+        content: 'Throughout history, different cultures have used different technologies as money. At its simplest, when a hunter gives a piece of deer meat to his friend, a bond is created\u2014an expectation that at some point his friend will return the favor.',
+        source: { author: 'Cryptocurrencies Decrypted \u2014 Oskar Hurme' },
+      },
+    ],
+  },
+}
+
 function ConsentModal({ email, onAccept, onDecline }: { email: string; onAccept: () => void; onDecline: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -59,7 +75,7 @@ function ConsentModal({ email, onAccept, onDecline }: { email: string; onAccept:
 export function SearchDemo() {
   const [query, setQuery] = useState('')
   const [tier, setTier] = useState('explanation')
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<any>(PRELOADED_RESULT)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -415,6 +431,31 @@ export function SearchDemo() {
                   {JSON.stringify(result.data, null, 2)}
                 </pre>
               </div>
+            </div>
+          )}
+
+          {/* Sample — preloaded example */}
+          {result?.type === 'sample' && (
+            <div className="flex-1 flex flex-col gap-4">
+              <div className="flex justify-between items-start">
+                <span className="px-2 py-1 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">Sample Answer</span>
+                <span className="text-xs font-mono text-on-surface-variant/50">&ldquo;What is money?&rdquo;</span>
+              </div>
+              <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px]">
+                {result.data.results?.map((item: any, index: number) => (
+                  <div key={index} className="bg-surface-container-lowest rounded border border-outline-variant/15 p-3">
+                    <p className="text-on-surface text-sm leading-relaxed mb-1">{item.content}</p>
+                    {item.source && (
+                      <p className="text-[10px] text-on-surface-variant/60">
+                        {item.source?.author}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-center text-[10px] text-on-surface-variant/40 italic">
+                This is a real answer from Sage Molly. Enter your email to ask your own questions.
+              </p>
             </div>
           )}
 

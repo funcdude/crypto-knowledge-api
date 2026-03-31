@@ -1,0 +1,14 @@
+Top 3 Product & UX Recommendations
+
+🥇 1. Pre-load a sample answer in the demo — don't start with an empty panel
+The problem: The right-hand answer panel loads blank with "Sage Molly's answers will appear here." This is the most valuable real estate on the page and it's doing nothing. Users have to spend one of their 3 free questions without any idea what quality they'll get — that's a high-friction first ask.
+The fix: Pre-populate the right panel with a real, impressive example answer the moment the page loads (e.g. "What is Money " → the full response). Let users see the product working before they commit to asking their own question. This is the difference between a demo and a blank form. It would likely be the single highest-impact conversion change on the site.
+
+🥈 2. Split the hero by audience — the code snippet is alienating human visitors
+The problem: The headline "Crypto Knowledge, Made Clear" speaks to a curious human learner. The giant code block next to it (HTTP 402 Payment Required, X-Payment: 0x7a2d...f3e1) speaks to a developer building an AI agent. These two audiences have completely different mental models and the mixed signal confuses both. A newcomer asking "What is Bitcoin?" sees a code terminal and thinks this isn't for them.
+The fix: Actually use the "For Humans / For AI Agents" nav switch to serve two different heroes. The Humans view replaces the code block with a live example Q&A exchange — a question and a compelling answer excerpt that shows the product's value instantly. 
+The AI Agents view keeps the code block and leads with the API/X402 story. The nav tabs already exist — they just don't do anything different yet.
+
+🥉 3. Add one concrete trust signal — the book needs a real cover & a usage number
+The problem: The "About the Source" section is the credibility anchor of the whole site, but the book cover is a placeholder icon (Bitcoin ₿ symbol on grey). There's no social proof anywhere — no "X questions answered", no reader quotes, no star rating. The site asks people to pay $0.01–$0.03 per query trusting that the source is authoritative, but there's nothing that viscerally conveys that authority.
+The fix: Two quick wins — (1) replace the placeholder with the actual Amazon book cover image (it exists, it has a real cover design), and (2) add one live counter anywhere on the page: "12,483 questions answered" or "Trusted by X readers." Even a static number works. Trust is the #1 conversion lever for a pay-per-query product and right now it's the weakest part of the page.
