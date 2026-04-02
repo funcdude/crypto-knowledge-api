@@ -495,8 +495,8 @@ export function SearchDemo() {
               </div>
               <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px]">
                 {result.data.results?.map((item: any, index: number) => {
-                  const shareText = `${item.content?.slice(0, 200)}… — via Sage Molly (sagemolly.com)`
-                  const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://sagemolly.com'
+                  const shareText = `${item.content?.slice(0, 200)}… — via Sage Molly (sagemolly.net)`
+                  const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://sagemolly.net'
                   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
                   const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
                   const handleCopy = () => {

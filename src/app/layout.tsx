@@ -26,7 +26,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://localhost:5000'),
+  metadataBase: new URL('https://sagemolly.net'),
   title: 'Sage Molly — Crypto Education for Humans & AI Agents',
   description: 'Expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme. Learn about Bitcoin, Ethereum, DeFi, and more — powered by X402 micropayments on Base L2.',
   icons: { icon: '/favicon.svg' },

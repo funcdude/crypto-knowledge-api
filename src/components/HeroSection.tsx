@@ -122,7 +122,7 @@ export function HeroSection() {
                 <p><span className="text-on-surface-variant/40">07</span> <span className="text-secondary"># Or use the Python SDK:</span></p>
                 <p><span className="text-on-surface-variant/40">08</span> <span className="text-green-400">from</span> x402.client <span className="text-green-400">import</span> Client</p>
                 <p><span className="text-on-surface-variant/40">09</span> client = Client(wallet=my_wallet)</p>
-                <p><span className="text-on-surface-variant/40">10</span> resp = client.get(<span className="text-tertiary">&quot;sagemolly.com/api/v1/search&quot;</span>)</p>
+                <p><span className="text-on-surface-variant/40">10</span> resp = client.get(<span className="text-tertiary">&quot;sagemolly.net/api/v1/search&quot;</span>)</p>
               </div>
             </div>
           )}

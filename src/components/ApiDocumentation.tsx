@@ -12,20 +12,20 @@ export function ApiDocumentation() {
       title: 'cURL Example',
       language: 'bash',
       code: `# Query without payment (returns HTTP 402)
-curl "https://sagemolly.com/api/v1/search?q=bitcoin+consensus&tier=explanation"
+curl "https://sagemolly.net/api/v1/search?q=bitcoin+consensus&tier=explanation"
 
 # Query with X402 payment
-curl "https://sagemolly.com/api/v1/search?q=bitcoin+consensus&tier=explanation" \\
+curl "https://sagemolly.net/api/v1/search?q=bitcoin+consensus&tier=explanation" \\
   -H "X-Payment: 0x7a2d...f3e1"
 
 # Get pricing tiers (free, no payment needed)
-curl "https://sagemolly.com/api/v1/pricing"`,
+curl "https://sagemolly.net/api/v1/pricing"`,
     },
     {
       title: 'JavaScript/TypeScript',
       language: 'javascript',
       code: `const querySageMolly = async (query, tier = 'explanation') => {
-  const url = 'https://sagemolly.com/api/v1/search'
+  const url = 'https://sagemolly.net/api/v1/search'
   const params = new URLSearchParams({ q: query, tier })
   
   const response = await fetch(\`\${url}?\${params}\`)
@@ -56,7 +56,7 @@ const result = await querySageMolly("How does DeFi work?", "summary")`,
       code: `import httpx
 
 async def query_sage_molly(query: str, tier: str = "explanation"):
-    url = "https://sagemolly.com/api/v1/search"
+    url = "https://sagemolly.net/api/v1/search"
     params = {"q": query, "tier": tier}
     
     async with httpx.AsyncClient() as client:
