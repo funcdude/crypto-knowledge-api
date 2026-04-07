@@ -1,6 +1,5 @@
 """MCP Server for Sage Molly — exposes crypto knowledge tools via Model Context Protocol"""
 
-import json
 from typing import Optional
 from fastmcp import FastMCP
 
@@ -10,8 +9,9 @@ mcp = FastMCP(
         "Sage Molly provides expert crypto education from 'Cryptocurrencies Decrypted' "
         "by Oskar Hurme. It searches 975 vectorized book passages using semantic search. "
         "All knowledge tools except get_pricing require X402 micropayment (USDC on Base L2). "
-        "When a tool returns a result with 'status': 'payment_required', the caller must "
-        "obtain a USDC payment proof and pass it as the 'payment_proof' parameter on retry."
+        "When a tool returns a result with 'payment_required' set to true, the caller must "
+        "obtain a USDC payment proof and pass it as the 'payment_proof' parameter on retry. "
+        "The 'payment_requirements' field contains the base64-encoded payment instructions."
     ),
 )
 
@@ -30,23 +30,18 @@ async def _make_request(method: str, url: str, params: dict = None, payment_proo
             resp = await client.post(url, json=params, headers=headers)
 
     if resp.status_code == 402:
-        payment_header = resp.headers.get("payment-required", "")
         try:
             body = resp.json()
         except Exception:
             body = {}
-        return {
-            "status": "payment_required",
-            "http_status": 402,
-            "message": "X402 payment required. Send USDC on Base L2 to access this knowledge.",
-            "payment_requirements": payment_header,
-            "details": body,
-        }
+        body["payment_required"] = True
+        body["payment_requirements"] = resp.headers.get("payment-required", "")
+        return body
 
     try:
-        return {"status": "ok", "http_status": resp.status_code, "data": resp.json()}
+        return resp.json()
     except Exception:
-        return {"status": "ok", "http_status": resp.status_code, "data": resp.text}
+        return {"raw": resp.text}
 
 
 @mcp.tool()
