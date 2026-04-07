@@ -16,9 +16,15 @@ mcp = FastMCP(
 )
 
 
-async def _make_request(method: str, url: str, params: dict = None, payment_proof: str = None) -> dict:
+def _api_base() -> str:
+    import os
+    return os.environ.get("MCP_API_BASE_URL", "http://localhost:8000")
+
+
+async def _make_request(method: str, path: str, params: dict = None, payment_proof: str = None) -> dict:
     import httpx
 
+    url = f"{_api_base()}{path}"
     headers = {}
     if payment_proof:
         headers["X-Payment"] = payment_proof
@@ -69,7 +75,7 @@ async def search_crypto_knowledge(
     if complexity:
         params["complexity"] = complexity
 
-    return await _make_request("GET", "http://localhost:8000/api/v1/search", params=params, payment_proof=payment_proof)
+    return await _make_request("GET", "/api/v1/search", params=params, payment_proof=payment_proof)
 
 
 @mcp.tool()
@@ -87,7 +93,7 @@ async def get_concept(
     """
     return await _make_request(
         "GET",
-        f"http://localhost:8000/api/v1/concepts/{concept}",
+        f"/api/v1/concepts/{concept}",
         params={"tier": tier},
         payment_proof=payment_proof,
     )
@@ -110,7 +116,7 @@ async def compare_concepts(
     """
     return await _make_request(
         "GET",
-        "http://localhost:8000/api/v1/compare",
+        "/api/v1/compare",
         params={"concept1": concept1, "concept2": concept2, "tier": tier},
         payment_proof=payment_proof,
     )
@@ -131,7 +137,7 @@ async def get_timeline(
     """
     return await _make_request(
         "GET",
-        f"http://localhost:8000/api/v1/timeline/{topic}",
+        f"/api/v1/timeline/{topic}",
         params={"tier": tier},
         payment_proof=payment_proof,
     )
@@ -140,4 +146,4 @@ async def get_timeline(
 @mcp.tool()
 async def get_pricing() -> dict:
     """Get current pricing tiers for Sage Molly's crypto knowledge API. This is a free endpoint — no payment required."""
-    return await _make_request("GET", "http://localhost:8000/api/v1/pricing")
+    return await _make_request("GET", "/api/v1/pricing")
