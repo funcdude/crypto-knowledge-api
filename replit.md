@@ -1,10 +1,19 @@
-# Sage Molly — MVP v0.4
+# Sage Molly — MVP v0.5
 
 ## Version
-**MVP v0.4** — March 31, 2026
+**MVP v0.5** — April 7, 2026
 
 ## Overview
 Full-stack application: Next.js frontend + Python FastAPI backend, serving expert crypto education from "Cryptocurrencies Decrypted" by Oskar Hurme. Branded as "Sage Molly" — a crypto education agent for humans and AI agents, powered by X402 micropayments on Base L2.
+
+## MVP v0.5 Changes (from v0.4)
+- **Agent Discoverability Layer**: Three integration surfaces for AI agents:
+  - **ERC-8004 Agent Card** at `/.well-known/agent.json` — Standard identity card for agent directories (8004scan.io). Served by FastAPI endpoint with dynamic wallet address.
+  - **MCP Server** at `/mcp/` — Model Context Protocol server (fastmcp 3.2.0) with 5 tools: `search_crypto_knowledge`, `get_concept`, `compare_concepts`, `get_timeline`, `get_pricing`. Compatible with Claude Code, Cursor, and all MCP clients.
+  - **SKILL.md** in `sage-molly-skill/` — Installable skill for Claude Code, OpenClaw, and SKILL.md-compatible agents. Lists on cryptoskill.org.
+- **Docs "Agent Integration" tab**: New tab on /docs showing MCP connection instructions, agent card URL, SKILL.md install, and tool reference table.
+- **Dependency upgrades**: FastAPI 0.104→0.135, OpenAI 1.3→2.30, Pydantic 2.5→2.12 (required for fastmcp compatibility with starlette 1.0).
+- **Proxy rules**: Next.js rewrites added for `/.well-known/*` and `/mcp/*` → FastAPI.
 
 ## MVP v0.4 Changes (from v0.3)
 - **Match quality & relevance filter**: Each answer shows a "% match" score (scaled from Pinecone cosine similarity, range 0.70–0.86 mapped to 0–100%). Queries below 50% match threshold return a "Low Relevance" response instead of irrelevant content. Backend adds `match_percent` field to all search results.
@@ -53,8 +62,11 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 │   └── app/
 │       ├── main.py          # FastAPI app entrypoint
 │       ├── core/            # Config, database, cache (NullRedisClient), x402 manager
+│       ├── mcp_server.py    # MCP server (5 tools wrapping knowledge API)
 │       ├── api/routes/      # health, knowledge, x402, freemium routes
 │       └── services/        # knowledge_service, embedding_service, analytics_service, text_utils
+├── sage-molly-skill/
+│   └── SKILL.md             # Installable skill for cryptoskill.org
 ├── server.js         # Production launcher (waits for backend health → starts Next.js)
 ├── build.sh          # Production build script (npm install, next build, pip install)
 ├── next.config.js    # Rewrites + security headers
@@ -154,7 +166,7 @@ The frontend uses the "Synthetic Architect" dark design system — Technical Bru
 - **PostgreSQL**: Provided by Replit's managed database integration (`DATABASE_URL` auto-set).
 - **`SKIP_PAYMENT_VERIFY=true` + `DEBUG=true`**: Both must be set for the payment bypass to activate in dev.
 - **`min_score=0.0`**: Pinecone cosine scores top out at ~0.85; default in `embedding_service.py` is `0.0`.
-- **Next.js proxy rewrites**: `next.config.js` rewrites `/api/v1/*`, `/health/*`, and `/x402/*` to `http://localhost:8000`.
+- **Next.js proxy rewrites**: `next.config.js` rewrites `/api/v1/*`, `/health/*`, `/x402/*`, `/.well-known/*`, and `/mcp/*` to `http://localhost:8000`.
 - **wordninja**: Pinned to v2.0.0 (v1.0.0 doesn't exist on PyPI).
 - **Deployment uses `node server.js`**: Bash scripts fail silently in the VM run step; Node.js child_process.spawn works reliably.
 - **`facilitator.coinbase.com` unreachable from Replit**: DNS doesn't resolve; use `facilitator.xpay.sh` or `x402.org/facilitator` instead.

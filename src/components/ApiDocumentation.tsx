@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-const TABS = ['Endpoints', 'Code Examples', 'X402 Flow', 'Pricing']
+const TABS = ['Endpoints', 'Code Examples', 'X402 Flow', 'Pricing', 'Agent Integration']
 
 export function ApiDocumentation() {
   const [activeTab, setActiveTab] = useState('Endpoints')
@@ -241,6 +241,104 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Agent Integration Tab */}
+        {activeTab === 'Agent Integration' && (
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-bold text-on-surface mb-2">Add Sage Molly to Your AI Agent</h3>
+              <p className="text-sm text-on-surface-variant mb-6">
+                Three ways to integrate Sage Molly&apos;s crypto knowledge into AI agents, tools, and directories.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🔌</span>
+                  <h4 className="text-sm font-bold text-on-surface">MCP Server</h4>
+                </div>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Connect Claude, Cursor, or any MCP-compatible agent directly to Sage Molly&apos;s 5 crypto knowledge tools.
+                </p>
+                <div className="bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-mono uppercase text-outline mb-2">Claude Code</p>
+                  <code className="text-xs font-mono text-secondary block break-all">claude mcp add sagemolly https://sagemolly.net/mcp/</code>
+                </div>
+                <div className="bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-mono uppercase text-outline mb-2">MCP Config</p>
+                  <pre className="text-xs font-mono text-secondary leading-relaxed">{`{
+  "mcpServers": {
+    "sagemolly": {
+      "url": "https://sagemolly.net/mcp/"
+    }
+  }
+}`}</pre>
+                </div>
+              </div>
+
+              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🪪</span>
+                  <h4 className="text-sm font-bold text-on-surface">ERC-8004 Agent Card</h4>
+                </div>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Standard identity card for agent directories like 8004scan.io. Includes name, capabilities, MCP endpoint, and payment wallet.
+                </p>
+                <div className="bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-mono uppercase text-outline mb-2">Agent Card URL</p>
+                  <a
+                    href="https://sagemolly.net/.well-known/agent.json"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-mono text-primary hover:underline break-all"
+                  >
+                    https://sagemolly.net/.well-known/agent.json
+                  </a>
+                </div>
+                <p className="text-[10px] text-on-surface-variant/60">
+                  Submit this URL to 8004scan.io to list Sage Molly in the agent registry.
+                </p>
+              </div>
+
+              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">📦</span>
+                  <h4 className="text-sm font-bold text-on-surface">SKILL.md</h4>
+                </div>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Install as a skill in Claude Code, OpenClaw, Codex, or any SKILL.md-compatible agent. Listed on cryptoskill.org.
+                </p>
+                <div className="bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-mono uppercase text-outline mb-2">Install</p>
+                  <code className="text-xs font-mono text-secondary block break-all">clawhub install sage-molly</code>
+                </div>
+                <p className="text-[10px] text-on-surface-variant/60">
+                  Or copy the sage-molly-skill/ folder into your agent&apos;s skills directory.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6">
+              <h4 className="text-sm font-bold text-on-surface mb-3">MCP Tools Available</h4>
+              <div className="space-y-2">
+                {[
+                  { name: 'search_crypto_knowledge', desc: 'Semantic search across 975 book passages', params: 'query, tier, max_results, topics, complexity' },
+                  { name: 'get_concept', desc: 'Detailed explanation of a specific crypto concept', params: 'concept, tier' },
+                  { name: 'compare_concepts', desc: 'Side-by-side comparison of two concepts', params: 'concept1, concept2, tier' },
+                  { name: 'get_timeline', desc: 'Historical timeline for a crypto topic', params: 'topic, tier' },
+                  { name: 'get_pricing', desc: 'Current pricing tiers (free, no payment)', params: 'none' },
+                ].map((tool, i) => (
+                  <div key={i} className="flex flex-wrap items-center gap-4 py-2 border-b border-outline-variant/5 last:border-0">
+                    <code className="font-mono text-xs text-primary font-bold">{tool.name}</code>
+                    <span className="text-xs text-on-surface-variant">{tool.desc}</span>
+                    <span className="text-[10px] font-mono text-outline ml-auto hidden md:block">params: {tool.params}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

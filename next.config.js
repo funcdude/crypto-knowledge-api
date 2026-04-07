@@ -28,6 +28,14 @@ const nextConfig = {
         source: '/x402/:path*',
         destination: 'http://localhost:8000/x402/:path*',
       },
+      {
+        source: '/.well-known/:path*',
+        destination: 'http://localhost:8000/.well-known/:path*',
+      },
+      {
+        source: '/mcp/:path*',
+        destination: 'http://localhost:8000/mcp/:path*',
+      },
     ];
   },
 

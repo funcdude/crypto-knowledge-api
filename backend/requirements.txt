@@ -1,8 +1,11 @@
 # FastAPI and core dependencies
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# MCP (Model Context Protocol) server
+fastmcp>=3.0.0
 
 # Database and caching
 asyncpg==0.29.0

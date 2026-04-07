@@ -43,6 +43,13 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+_mcp_http_app = None
+try:
+    from app.mcp_server import mcp as _mcp_instance
+    _mcp_http_app = _mcp_instance.http_app(path="/")
+except Exception as e:
+    logger.warning("MCP app creation failed", error=str(e))
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup/shutdown tasks"""
@@ -109,7 +116,11 @@ async def lifespan(app: FastAPI):
     
     logger.info("🚀 Sage Molly startup complete!")
     
-    yield
+    if _mcp_http_app and hasattr(_mcp_http_app, 'lifespan'):
+        async with _mcp_http_app.lifespan(_mcp_http_app):
+            yield
+    else:
+        yield
     
     # Shutdown tasks
     logger.info("Shutting down Sage Molly...")
@@ -239,6 +250,28 @@ app.include_router(x402.router, prefix="/x402", tags=["x402"])
 app.include_router(knowledge.router, prefix="/api/v1", tags=["knowledge"])
 app.include_router(freemium.router, prefix="/api/v1", tags=["freemium"])
 app.include_router(crm.router, prefix="/api/v1", tags=["crm"])
+
+# Mount MCP server (Model Context Protocol) for AI agent tool access
+if _mcp_http_app:
+    app.mount("/mcp", _mcp_http_app)
+    logger.info("MCP server mounted at /mcp")
+
+# ERC-8004 agent card endpoint
+@app.get("/.well-known/agent.json")
+async def agent_card():
+    return {
+        "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+        "name": "Sage Molly",
+        "description": "Expert crypto education agent powered by 975 vectorized passages from 'Cryptocurrencies Decrypted' by Oskar Hurme. Answers questions about Bitcoin, Ethereum, DeFi, stablecoins, CBDCs, blockchain, and monetary systems using semantic search. Monetized via X402 micropayments (USDC on Base L2).",
+        "image": "https://sagemolly.net/images/book-cover.jpg",
+        "services": [
+            {"name": "web", "endpoint": "https://sagemolly.net/", "version": "0.4.0"},
+            {"name": "MCP", "endpoint": "https://sagemolly.net/mcp/", "version": "1.0.0"},
+            {"name": "wallet", "endpoint": f"eip155:8453:{settings.PAYMENT_ADDRESS}"},
+        ],
+        "registrations": [],
+        "supportedTrust": ["reputation"],
+    }
 
 # Root endpoint
 @app.get("/")
