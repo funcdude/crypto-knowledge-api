@@ -33,7 +33,7 @@ eth-utils==2.3.0
 x402>=2.5.0
 
 # Utilities
-python-dotenv==1.0.0
+python-dotenv>=1.1.0
 structlog==23.2.0
 tenacity==8.2.3
 wordninja==2.0.0
