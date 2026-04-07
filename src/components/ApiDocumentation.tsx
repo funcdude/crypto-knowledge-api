@@ -317,6 +317,17 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
                   <p className="text-[10px] font-mono uppercase text-outline mb-2">Install</p>
                   <code className="text-xs font-mono text-secondary block break-all">clawhub install sage-molly</code>
                 </div>
+                <div className="bg-surface-container rounded-lg p-3">
+                  <p className="text-[10px] font-mono uppercase text-outline mb-2">GitHub</p>
+                  <a
+                    href="https://github.com/ohurme/sage-molly/tree/main/sage-molly-skill"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-mono text-primary hover:underline break-all"
+                  >
+                    github.com/ohurme/sage-molly/tree/main/sage-molly-skill
+                  </a>
+                </div>
                 <p className="text-[10px] text-on-surface-variant/60">
                   Or copy the sage-molly-skill/ folder into your agent&apos;s skills directory.
                 </p>
