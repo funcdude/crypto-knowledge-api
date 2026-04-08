@@ -8,7 +8,8 @@ mcp = FastMCP(
     instructions=(
         "Sage Molly provides expert crypto education from 'Cryptocurrencies Decrypted' "
         "by Oskar Hurme. It searches 975 vectorized book passages using semantic search. "
-        "All knowledge tools except get_pricing require X402 micropayment (USDC on Base L2). "
+        "Offers 4 tools: search, concept lookup, comparison, and pricing. "
+        "All tools except get_pricing require X402 micropayment (USDC on Base L2). "
         "When a tool returns a result with 'payment_required' set to true, the caller must "
         "obtain a USDC payment proof and pass it as the 'payment_proof' parameter on retry. "
         "The 'payment_requirements' field contains the base64-encoded payment instructions."
@@ -121,26 +122,6 @@ async def compare_concepts(
         payment_proof=payment_proof,
     )
 
-
-@mcp.tool()
-async def get_timeline(
-    topic: str,
-    tier: str = "analysis",
-    payment_proof: Optional[str] = None,
-) -> dict:
-    """Get historical timeline of key developments for a crypto topic.
-
-    Args:
-        topic: The topic to trace (e.g. 'bitcoin', 'defi', 'stablecoins')
-        tier: Response depth — 'summary' ($0.02) or 'analysis' ($0.03)
-        payment_proof: Base64-encoded X402 payment proof. Required for paid requests.
-    """
-    return await _make_request(
-        "GET",
-        f"/api/v1/timeline/{topic}",
-        params={"tier": tier},
-        payment_proof=payment_proof,
-    )
 
 
 @mcp.tool()

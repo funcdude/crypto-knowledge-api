@@ -262,12 +262,12 @@ async def agent_card():
     return {
         "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
         "name": "Sage Molly",
-        "description": "Expert crypto education agent powered by 975 vectorized passages from 'Cryptocurrencies Decrypted' by Oskar Hurme. Answers questions about Bitcoin, Ethereum, DeFi, stablecoins, CBDCs, blockchain, and monetary systems using semantic search. Monetized via X402 micropayments (USDC on Base L2).",
+        "description": "Expert crypto education agent powered by 975 vectorized passages from 'Cryptocurrencies Decrypted' by Oskar Hurme. Answers questions about Bitcoin, Ethereum, DeFi, stablecoins, CBDCs, blockchain, and monetary systems using semantic search. Offers 4 tools: search, concept lookup, comparison, and pricing. Monetized via X402 micropayments (USDC on Base L2).",
         "image": "https://sagemolly.net/images/book-cover.jpg",
         "services": [
             {"name": "web", "endpoint": "https://sagemolly.net/", "version": "0.4.0"},
             {"name": "MCP", "endpoint": "https://sagemolly.net/mcp/", "version": "1.0.0"},
-            {"name": "wallet", "endpoint": f"eip155:8453:{settings.PAYMENT_ADDRESS}"},
+            {"name": "wallet", "endpoint": f"eip155:8453:{settings.PAYMENT_ADDRESS}"}
         ],
         "registrations": [],
         "supportedTrust": ["reputation"],

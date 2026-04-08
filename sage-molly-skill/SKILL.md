@@ -5,7 +5,7 @@ description: >
   DeFi, stablecoins, CBDCs, blockchain, money, or monetary systems. Provides
   expert answers from "Cryptocurrencies Decrypted" by Oskar Hurme via semantic
   search across 975 knowledge passages. Supports search, concept explanations,
-  concept comparisons, and historical timelines. Paid via X402 micropayments
+  concept comparisons, and pricing info. Paid via X402 micropayments
   (USDC on Base L2).
 version: 1.0.0
 author: Oskar Hurme
@@ -25,7 +25,6 @@ stablecoins, CBDCs, blockchain technology, and monetary systems.
 
 - User asks about cryptocurrency concepts (Bitcoin, Ethereum, DeFi, etc.)
 - User wants to understand blockchain, consensus mechanisms, or tokenomics
-- User asks about the history or evolution of crypto topics
 - User wants to compare two crypto concepts (e.g., Bitcoin vs Ethereum)
 - User needs expert-level explanations of monetary policy, CBDCs, or stablecoins
 - User asks "what is money?" or about the nature of value and exchange
@@ -68,15 +67,7 @@ GET /api/v1/compare?concept1={a}&concept2={b}&tier={tier}
 
 Side-by-side comparison of two concepts. Tier must be `summary` or `analysis`.
 
-### 4. Topic Timeline
-
-```
-GET /api/v1/timeline/{topic}?tier={tier}
-```
-
-Historical timeline of key developments for a crypto topic.
-
-### 5. Pricing (Free)
+### 4. Pricing (Free)
 
 ```
 GET /api/v1/pricing
@@ -108,7 +99,6 @@ Available MCP tools:
 - `search_crypto_knowledge` — Semantic search across 975 book passages
 - `get_concept` — Detailed explanation of a specific crypto concept
 - `compare_concepts` — Side-by-side comparison of two concepts
-- `get_timeline` — Historical timeline for a crypto topic
 - `get_pricing` — Current pricing tiers and payment info
 
 ## X402 Payment Flow

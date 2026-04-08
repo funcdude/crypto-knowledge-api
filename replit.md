@@ -9,7 +9,7 @@ Full-stack application: Next.js frontend + Python FastAPI backend, serving exper
 ## MVP v0.5 Changes (from v0.4)
 - **Agent Discoverability Layer**: Three integration surfaces for AI agents:
   - **ERC-8004 Agent Card** at `/.well-known/agent.json` — Standard identity card for agent directories (8004scan.io). Served by FastAPI endpoint with dynamic wallet address.
-  - **MCP Server** at `/mcp/` — Model Context Protocol server (fastmcp 3.2.0) with 5 tools: `search_crypto_knowledge`, `get_concept`, `compare_concepts`, `get_timeline`, `get_pricing`. Compatible with Claude Code, Cursor, and all MCP clients.
+  - **MCP Server** at `/mcp/` — Model Context Protocol server (fastmcp 3.2.0) with 4 tools: `search_crypto_knowledge`, `get_concept`, `compare_concepts`, `get_pricing`. Compatible with Claude Code, Cursor, and all MCP clients.
   - **SKILL.md** in `sage-molly-skill/` — Installable skill for Claude Code, OpenClaw, and SKILL.md-compatible agents. Lists on cryptoskill.org.
 - **Docs "Agent Integration" tab**: New tab on /docs showing MCP connection instructions, agent card URL, SKILL.md install, and tool reference table.
 - **Dependency upgrades**: FastAPI 0.104→0.135, OpenAI 1.3→2.30, Pydantic 2.5→2.12 (required for fastmcp compatibility with starlette 1.0).

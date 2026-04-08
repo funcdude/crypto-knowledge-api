@@ -107,12 +107,6 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
     },
     {
       method: 'GET',
-      path: '/api/v1/timeline/{topic}',
-      description: 'Get historical timeline for crypto topic',
-      params: 'topic (path), tier (query)',
-    },
-    {
-      method: 'GET',
       path: '/api/v1/pricing',
       description: 'Get current pricing tiers (free endpoint)',
       params: 'None',
@@ -341,7 +335,6 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
                   { name: 'search_crypto_knowledge', desc: 'Semantic search across 975 book passages', params: 'query, tier, max_results, topics, complexity' },
                   { name: 'get_concept', desc: 'Detailed explanation of a specific crypto concept', params: 'concept, tier' },
                   { name: 'compare_concepts', desc: 'Side-by-side comparison of two concepts', params: 'concept1, concept2, tier' },
-                  { name: 'get_timeline', desc: 'Historical timeline for a crypto topic', params: 'topic, tier' },
                   { name: 'get_pricing', desc: 'Current pricing tiers (free, no payment)', params: 'none' },
                 ].map((tool, i) => (
                   <div key={i} className="flex flex-wrap items-center gap-4 py-2 border-b border-outline-variant/5 last:border-0">

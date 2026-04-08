@@ -453,58 +453,6 @@ async def compare_concepts(
             detail={"error": "Failed to compare concepts"}
         )
 
-@router.get("/timeline/{topic}")
-async def get_topic_timeline(
-    request: Request,
-    topic: str,
-    tier: str = Query("analysis", description="Response tier"),
-    knowledge_service: KnowledgeService = Depends(get_knowledge_service)
-):
-    """
-    Get historical timeline for a crypto topic
-    
-    Traces the evolution and key milestones of crypto topics like Bitcoin, 
-    DeFi, regulations, etc. based on book content.
-    """
-    
-    # Require payment
-    await require_payment(
-        request=request,
-        tier=tier,
-        description=f"Timeline: {topic}"
-    )
-    
-    try:
-        result = await knowledge_service.get_topic_timeline(
-            topic=topic,
-            tier=tier
-        )
-        
-        if not result:
-            raise HTTPException(
-                status_code=404,
-                detail={"error": "Topic timeline not found", "topic": topic}
-            )
-        
-        pricing = get_pricing_config()
-        book_metadata = get_book_metadata()
-        
-        return {
-            "topic": topic,
-            "tier": tier,
-            "timeline": result,
-            "cost_usd": pricing[tier]["price"],
-            "book_metadata": book_metadata
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("Topic timeline failed", topic=topic, error=str(e))
-        raise HTTPException(
-            status_code=500,
-            detail={"error": "Failed to get topic timeline"}
-        )
 
 @router.get("/pricing")
 async def get_pricing_info():
