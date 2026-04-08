@@ -83,13 +83,13 @@ access from Claude, Cursor, and other MCP-compatible agents:
 
 ```bash
 # Claude Code
-claude mcp add sagemolly https://sagemolly.net/mcp/
+claude mcp add sagemolly https://sagemolly.net/mcp
 
 # Or configure in your MCP client
 {
   "mcpServers": {
     "sagemolly": {
-      "url": "https://sagemolly.net/mcp/"
+      "url": "https://sagemolly.net/mcp"
     }
   }
 }

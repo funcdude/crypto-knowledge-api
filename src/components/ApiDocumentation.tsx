@@ -261,14 +261,14 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
                 </p>
                 <div className="bg-surface-container rounded-lg p-3">
                   <p className="text-[10px] font-mono uppercase text-outline mb-2">Claude Code</p>
-                  <code className="text-xs font-mono text-secondary block break-all">claude mcp add sagemolly https://sagemolly.net/mcp/</code>
+                  <code className="text-xs font-mono text-secondary block break-all">claude mcp add sagemolly https://sagemolly.net/mcp</code>
                 </div>
                 <div className="bg-surface-container rounded-lg p-3">
                   <p className="text-[10px] font-mono uppercase text-outline mb-2">MCP Config</p>
                   <pre className="text-xs font-mono text-secondary leading-relaxed">{`{
   "mcpServers": {
     "sagemolly": {
-      "url": "https://sagemolly.net/mcp/"
+      "url": "https://sagemolly.net/mcp"
     }
   }
 }`}</pre>

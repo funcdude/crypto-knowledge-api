@@ -266,7 +266,7 @@ async def agent_card():
         "image": "https://sagemolly.net/images/book-cover.jpg",
         "services": [
             {"name": "web", "endpoint": "https://sagemolly.net/", "version": "0.4.0"},
-            {"name": "MCP", "endpoint": "https://sagemolly.net/mcp/", "version": "1.0.0"},
+            {"name": "MCP", "endpoint": "https://sagemolly.net/mcp", "version": "1.0.0"},
             {"name": "wallet", "endpoint": f"eip155:8453:{settings.PAYMENT_ADDRESS}"}
         ],
         "registrations": [],

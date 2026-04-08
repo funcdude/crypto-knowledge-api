@@ -33,6 +33,10 @@ const nextConfig = {
         destination: 'http://localhost:8000/.well-known/:path*',
       },
       {
+        source: '/mcp',
+        destination: 'http://localhost:8000/mcp/',
+      },
+      {
         source: '/mcp/:path*',
         destination: 'http://localhost:8000/mcp/:path*',
       },
