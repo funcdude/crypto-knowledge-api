@@ -246,11 +246,11 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
             <div>
               <h3 className="text-lg font-bold text-on-surface mb-2">Add Sage Molly to Your AI Agent</h3>
               <p className="text-sm text-on-surface-variant mb-6">
-                Three ways to integrate Sage Molly&apos;s crypto knowledge into AI agents, tools, and directories.
+                Two ways to integrate Sage Molly&apos;s crypto knowledge into AI agents, tools, and directories.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🔌</span>
@@ -299,33 +299,6 @@ result = await query_sage_molly("What is fractional reserve?", "analysis")`,
                 </p>
               </div>
 
-              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">📦</span>
-                  <h4 className="text-sm font-bold text-on-surface">SKILL.md</h4>
-                </div>
-                <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Install as a skill in Claude Code, OpenClaw, Codex, or any SKILL.md-compatible agent. Listed on cryptoskill.org.
-                </p>
-                <div className="bg-surface-container rounded-lg p-3">
-                  <p className="text-[10px] font-mono uppercase text-outline mb-2">Install</p>
-                  <code className="text-xs font-mono text-secondary block break-all">clawhub install sage-molly</code>
-                </div>
-                <div className="bg-surface-container rounded-lg p-3">
-                  <p className="text-[10px] font-mono uppercase text-outline mb-2">GitHub</p>
-                  <a
-                    href="https://github.com/ohurme/sage-molly/tree/main/sage-molly-skill"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-mono text-primary hover:underline break-all"
-                  >
-                    github.com/ohurme/sage-molly/tree/main/sage-molly-skill
-                  </a>
-                </div>
-                <p className="text-[10px] text-on-surface-variant/60">
-                  Or copy the sage-molly-skill/ folder into your agent&apos;s skills directory.
-                </p>
-              </div>
             </div>
 
             <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6">
